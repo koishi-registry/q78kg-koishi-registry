@@ -13,15 +13,10 @@ let pluginsData = {
 }
 
 async function saveToFile(data, filename = 'public/index.json') {
-    const utc8Date = new Date(
-        new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' })
-    )
+    const utc8Date = new Date()
 
     const output = {
-        time: utc8Date.toLocaleString('zh-CN', {
-            timeZone: 'Asia/Shanghai',
-            hour12: false
-        }),
+        time: utc8Date.toUTCString(),
         total: data.length,
         version: 1,
         objects: data
@@ -36,17 +31,10 @@ async function updatePluginsData() {
     try {
         const plugins = await fetchKoishiPlugins()
         if (plugins.length) {
-            const utc8Date = new Date(
-                new Date().toLocaleString('en-US', {
-                    timeZone: 'Asia/Shanghai'
-                })
-            )
+            const utc8Date = new Date()
 
             pluginsData = {
-                time: utc8Date.toLocaleString('zh-CN', {
-                    timeZone: 'Asia/Shanghai',
-                    hour12: false
-                }),
+                time: utc8Date.toUTCString(),
                 total: plugins.length,
                 version: 1,
                 objects: plugins

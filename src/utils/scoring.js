@@ -33,13 +33,13 @@ export function calculatePackageScore({
   });
 
   // 最终评分 (0-1)
-  const final = quality * 0.4 + maintenance * 0.35 + popularity * 0.25;
+  const final = (quality * 0.4 + maintenance * 0.35 + popularity * 0.25) * 10;
 
   return {
     final,
-    quality,
-    popularity,
-    maintenance,
+    quality: quality * 10,
+    popularity: popularity * 10,
+    maintenance: maintenance * 10,
   };
 }
 
