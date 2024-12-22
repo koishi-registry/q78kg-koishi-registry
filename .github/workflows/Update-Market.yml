@@ -59,6 +59,8 @@ jobs:
                   mkdir -p public
                   cp /tmp/index.json public/index.json
 
+                  git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
+
                   git add -f public/index.json
                   git commit -m "Update market data" || true
                   git push -f origin pages
