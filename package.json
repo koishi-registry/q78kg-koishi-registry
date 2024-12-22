@@ -1,10 +1,10 @@
 {
   "name": "koishi-registry",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node dist/index.mjs",
     "build": "node esbuild.config.mjs",
     "lint": "node eslint.config.mjs",
     "lint-fix": "node eslint.config.mjs --fix"

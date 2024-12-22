@@ -29,3 +29,5 @@ data.json
 !.yarn/versions
 
 dist
+
+index.json
