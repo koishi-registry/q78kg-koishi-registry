@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node src/index.js --server",
     "scan": "node src/index.js",
-    "lint": "node eslint.config.mjs",
-    "lint-fix": "node eslint.config.mjs --fix"
+    "prettier": "prettier --write src"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -16,16 +15,6 @@
   },
   "packageManager": "yarn@4.5.3+sha512.3003a14012e2987072d244c720506549c1aab73ee728208f1b2580a9fd67b92d61ba6b08fe93f6dce68fd771e3af1e59a0afa28dd242dd0940d73b95fedd4e90",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^8.6.0",
-    "eslint": "^9.17.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.30.0",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-promise": "^7.1.0",
-    "prettier": "^3.3.3",
-    "typescript": "^5.7.2"
+    "prettier": "^3.3.3"
   }
 }
