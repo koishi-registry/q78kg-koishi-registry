@@ -1,12 +1,12 @@
 FROM docker.1panel.live/library/node:lts-slim
 
-WORKDIR /app
+COPY . /koishi-registry
 
-COPY package.json yarn.lock src/
+WORKDIR /koishi-registry
+
+RUN corepack enable
 
 RUN yarn
-
-COPY . .
 
 EXPOSE 3000
 
