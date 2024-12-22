@@ -14,4 +14,7 @@ export const config = {
   SEARCH_QUERY: "koishi-plugin-",
   SEARCH_SIZE: 10000,
   VALID_PACKAGE_PATTERN: /^(?:@[^/]+\/)?koishi-plugin-[\w-]+$/,
+
+  // 已验证的发布者
+  VERIFIED_PUBLISHERS: ['shigma'],
 };

@@ -71,8 +71,8 @@ async function fetchPackageDetails(name, result) {
     };
 
     const isVerified =
-      publisher.name.toLowerCase() === "shigma" ||
-      publisher.username.toLowerCase() === "shigma";
+      config.VERIFIED_PUBLISHERS.includes(publisher.name.toLowerCase()) ||
+      config.VERIFIED_PUBLISHERS.includes(publisher.username.toLowerCase());
 
     const shortname = name.startsWith("@")
       ? `${name.split("/")[0]}/${name
