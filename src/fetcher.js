@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import { config } from "./config.js";
 import { calculatePackageScore } from "./utils/scoring.js";
+import { loadCategories } from './utils/categories.js';
 
 const NPM_SEARCH_URL = `${config.NPM_REGISTRY_BASE}/-/v1/search`;
 
@@ -152,6 +153,9 @@ async function fetchPackageDetails(name, result) {
 }
 
 export async function fetchKoishiPlugins() {
+  // 加载分类信息
+  const categories = await loadCategories();
+  
   const plugins = [];
   let fromOffset = 0;
   let totalPackages = null;
@@ -180,6 +184,8 @@ export async function fetchKoishiPlugins() {
         name: result.package.name,
         result: {
           ...result,
+          // 添加分类信息
+          category: categories.get(result.package.name) || 'other',
           downloads: result.downloads || { all: 0 }
         }
       }));
