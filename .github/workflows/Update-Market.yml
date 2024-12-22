@@ -4,7 +4,8 @@ on:
     schedule:
         - cron: '*/10 * * * *'  # 每10分钟运行一次
     push:
-        - branch: main
+        branches:
+            - main
 
 jobs:
     update-market:
@@ -56,7 +57,10 @@ jobs:
 
                   git rm -rf .
 
-                  cp -r public/* .
+                  cd public
+                  cp -r . ..
+                  cd ..
+                  rm -rf public
 
                   git add .
                   git commit -m "Deploy to pages branch"
