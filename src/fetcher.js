@@ -115,7 +115,7 @@ async function fetchPackageDetails(name, result) {
           maintenance: score.maintenance,
         },
       },
-      rating: result.rating || 0,
+      rating: score.final,
       license: versionInfo.license || pkgData.license || "",
       package: {
         name,
