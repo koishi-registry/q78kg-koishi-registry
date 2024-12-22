@@ -38,6 +38,38 @@ async function fetchPackageDetails(name, result) {
       username: versionInfo._npmUser?.name || "",
     };
 
+    const maintainers = (pkgData.maintainers || []).map((maintainer) => ({
+      name: maintainer.name || "",
+      email: maintainer.email || "",
+      username: maintainer.name || "",
+    }));
+
+    const contributors = (versionInfo.contributors || []).map((contributor) => {
+      if (typeof contributor === "string") {
+        return { name: contributor };
+      }
+      return {
+        name: contributor.name || "",
+        email: contributor.email || "",
+        url: contributor.url || "",
+        username: contributor.name || "",
+      };
+    });
+
+    const npmLink = name.startsWith("@")
+      ? `${config.NPM_PACKAGE_URL}/${name}`
+      : `${config.NPM_PACKAGE_URL}/package/${name}`;
+
+    const packageLinks = {
+      npm: npmLink,
+      bugs: versionInfo.bugs?.url || "",
+      homepage: versionInfo.homepage || "",
+      repository:
+        typeof versionInfo.repository === "object"
+          ? versionInfo.repository.url || ""
+          : versionInfo.repository || "",
+    };
+
     const isVerified =
       publisher.name.toLowerCase() === "shigma" ||
       publisher.username.toLowerCase() === "shigma";
@@ -65,15 +97,32 @@ async function fetchPackageDetails(name, result) {
         final: 0,
         detail: { quality: 0, popularity: 0, maintenance: 0 },
       },
-      // ... 其他字段保持与原代码相同
-      manifest,
+      rating: result.rating || 0,
+      license: versionInfo.license || pkgData.license || "",
       package: {
         name,
+        keywords: versionInfo.keywords || [],
         version: latestVersion,
         description: versionInfo.description || "",
         publisher,
-        // ... 其他包信息
+        maintainers,
+        license: versionInfo.license || pkgData.license || "",
+        date: timeInfo[latestVersion],
+        links: packageLinks,
+        contributors,
       },
+      flags: {
+        insecure: 0,
+      },
+      manifest,
+      publishSize: versionInfo.dist?.unpackedSize || 0,
+      installSize: versionInfo.dist?.size || 0,
+      dependents: 0,
+      downloads: {
+        lastMonth: 0,
+      },
+      insecure: false,
+      ignored: false,
     };
   } catch (error) {
     console.error(`Error fetching ${name}:`, error);
