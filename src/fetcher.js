@@ -70,15 +70,18 @@ async function fetchPackageDetails(name, result) {
           : versionInfo.repository || "",
     };
 
-    const isVerified =
-      config.VERIFIED_PUBLISHERS.includes(publisher.name.toLowerCase()) ||
-      config.VERIFIED_PUBLISHERS.includes(publisher.username.toLowerCase());
+    const isVerified = name.startsWith('@koishijs/');
 
-    const shortname = name.startsWith("@")
-      ? `${name.split("/")[0]}/${name
-          .split("/")[1]
-          .replace("koishi-plugin-", "")}`
-      : name.replace("koishi-plugin-", "");
+    const shortname = (() => {
+      if (name.startsWith('@koishijs/')) {
+        return name.replace('@koishijs/plugin-', '');
+      } else if (name.startsWith('@')) {
+        const [scope, pkgName] = name.split('/');
+        return `${scope}/${pkgName.replace('koishi-plugin-', '')}`;
+      } else {
+        return name.replace('koishi-plugin-', '');
+      }
+    })();
 
     const manifest = versionInfo.koishi || pkgData.koishi || {};
     if (!manifest.description) {
