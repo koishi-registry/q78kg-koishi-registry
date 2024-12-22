@@ -44,7 +44,7 @@ async function updatePluginsData() {
 }
 
 export function startServer() {
-  // 首次更新数���
+  // 首次更新数据
   updatePluginsData();
 
   // 设置定时任务
