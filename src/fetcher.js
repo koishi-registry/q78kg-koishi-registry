@@ -101,7 +101,7 @@ async function fetchPackageDetails(name, result) {
 
     // 从 search 结果中获取下载量
     const downloads = {
-      totalDownloads: result.downloads?.all || 0
+      lastMonth: result.downloads?.lastMonth || 0,
     };
 
     return {
