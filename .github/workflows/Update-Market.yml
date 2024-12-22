@@ -56,11 +56,10 @@ jobs:
                   git checkout --orphan pages
                   git reset --hard
 
-                  mkdir -p public
-                  cp /tmp/index.json public/index.json
+                  cp /tmp/index.json index.json
 
                   git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
 
-                  git add -f public/index.json
+                  git add -f index.json
                   git commit -m "Update market data" || true
                   git push -f origin pages
