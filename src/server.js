@@ -12,7 +12,7 @@ let pluginsData = {
     objects: []
 }
 
-async function saveToFile(data, filename = 'index.json') {
+async function saveToFile(data, filename = 'public/index.json') {
     const utc8Date = new Date(
         new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' })
     )
@@ -27,6 +27,7 @@ async function saveToFile(data, filename = 'index.json') {
         objects: data
     }
 
+    await fs.mkdir('public', { recursive: true })
     await fs.writeFile(filename, JSON.stringify(output, null, 2), 'utf-8')
 }
 
@@ -80,7 +81,7 @@ export function startServer() {
     cron.schedule(config.SCAN_CRON, updatePluginsData)
 
     // API 路由
-    app.get('/index.json', (req, res) => {
+    app.get('/index.json', (_req, res) => {
         res.json(pluginsData)
     })
 
