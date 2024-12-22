@@ -1,8 +1,8 @@
-name: Hexo Deploy
+name: Update Market
 
 on:
     schedule:
-        - cron: '*/10 * * * *'  # 每10分钟运行一次
+        - cron: '*/10 * * * *' # 每10分钟运行一次
     push:
         branches:
             - main
@@ -49,20 +49,18 @@ jobs:
               run: |
                   yarn scan
 
-                  git add .
-                  git stash
+            - name: Deploy to Pages Branch
+              run: |
+                  cp public/index.json /tmp/index.json
 
-                  git fetch
-                  git checkout pages || git checkout -b pages
+                  git fetch origin pages || git checkout --orphan pages
+                  git checkout pages || true
+                  git pull origin pages || true
 
-                  git rm -rf .
+                  mkdir -p public
 
-                  cd public
-                  cp -r . ..
-                  cd ..
-                  rm -rf public
+                  cp /tmp/index.json public/index.json
 
-                  git add .
-                  git commit -m "Deploy to pages branch"
-
-                  git push origin pages -f
+                  git add public/index.json
+                  git commit -m "Update market data" || true
+                  git push origin pages
