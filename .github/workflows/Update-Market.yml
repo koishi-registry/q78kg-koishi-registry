@@ -53,14 +53,12 @@ jobs:
               run: |
                   cp public/index.json /tmp/index.json
 
-                  git fetch origin pages || git checkout --orphan pages
-                  git checkout pages || true
-                  git pull origin pages || true
+                  git checkout --orphan pages
+                  git reset --hard
 
                   mkdir -p public
-
                   cp /tmp/index.json public/index.json
 
-                  git add public/index.json
+                  git add -f public/index.json
                   git commit -m "Update market data" || true
-                  git push origin pages
+                  git push -f origin pages
