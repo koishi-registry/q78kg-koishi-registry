@@ -99,6 +99,11 @@ async function fetchPackageDetails(name, result) {
       packageLinks,
     });
 
+    // 从 search 结果中获取下载量
+    const downloads = {
+      totalDownloads: result.downloads?.all || 0
+    };
+
     return {
       category: result.category || "other",
       shortname,
@@ -136,9 +141,7 @@ async function fetchPackageDetails(name, result) {
       publishSize: versionInfo.dist?.unpackedSize || 0,
       installSize: versionInfo.dist?.size || 0,
       dependents: 0,
-      downloads: {
-        lastMonth: 0,
-      },
+      downloads,
       insecure: false,
       ignored: false,
     };
@@ -173,7 +176,13 @@ export async function fetchKoishiPlugins() {
       .filter((result) =>
         config.VALID_PACKAGE_PATTERN.test(result.package?.name)
       )
-      .map((result) => ({ name: result.package.name, result }));
+      .map((result) => ({
+        name: result.package.name,
+        result: {
+          ...result,
+          downloads: result.downloads || { all: 0 }
+        }
+      }));
 
     // 并行处理包详情
     const batchPromises = validPackages.map(({ name, result }) =>
