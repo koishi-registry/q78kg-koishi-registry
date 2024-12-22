@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import { config } from "./config.js";
-import { calculatePackageScore } from "../utils/scoring.js";
+import { calculatePackageScore } from "./utils/scoring.js";
 
 const NPM_SEARCH_URL = `${config.NPM_REGISTRY_BASE}/-/v1/search`;
 
