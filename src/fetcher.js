@@ -40,6 +40,15 @@ async function fetchPackageDetails(name, result) {
             return null
         }
 
+        // 检查 koishi 版本要求
+        const peerDeps = versionInfo.peerDependencies || {}
+        if (peerDeps.koishi) {
+            const versionRequirement = peerDeps.koishi
+            if (!versionRequirement.match(/(?:^|\D)4\.|\^4|\~4|>=4/)) {
+                return null
+            }
+        }
+
         const timeInfo = pkgData.time || {}
         const publisher = {
             name: versionInfo._npmUser?.name || '',
