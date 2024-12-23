@@ -18,6 +18,6 @@ export const config = {
     SEARCH_SIZE: parseInt(process.env.SEARCH_SIZE || '10000'),
     VALID_PACKAGE_PATTERN: new RegExp(
         process.env.VALID_PACKAGE_PATTERN ||
-            '^(?:@[^/]+\/)?koishi-plugin-[\\w-]+$'
+            '^(?:@[^/]+\/koishi-plugin-|@koishijs\/plugin-|koishi-plugin-)[\\w-]+$'
     )
 }
