@@ -10,7 +10,7 @@ export async function loadCategories() {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)
         }
-        const categoryList = await response.json()
+        const { categories: categoryList } = await response.json()
 
         // 获取每个分类下的插件
         for (const category of categoryList) {
