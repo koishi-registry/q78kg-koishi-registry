@@ -30,12 +30,17 @@ async function fetchPackageDetails(name, result) {
         const pkgUrl = `${config.NPM_REGISTRY_BASE}/${name}`
         const pkgData = await fetchWithRetry(pkgUrl)
 
-        const timeInfo = pkgData.time || {}
         const latestVersion = pkgData['dist-tags']?.latest
         const versionInfo = latestVersion
             ? pkgData.versions?.[latestVersion]
             : {}
 
+        // 检查包是否被弃用
+        if (versionInfo.deprecated || pkgData.deprecated) {
+            return null
+        }
+
+        const timeInfo = pkgData.time || {}
         const publisher = {
             name: versionInfo._npmUser?.name || '',
             email: versionInfo._npmUser?.email || '',
@@ -163,6 +168,7 @@ export async function fetchKoishiPlugins() {
     const plugins = []
     let fromOffset = 0
     let totalPackages = null
+    let skippedPackages = 0
 
     while (true) {
         const params = new URLSearchParams({
@@ -188,7 +194,6 @@ export async function fetchKoishiPlugins() {
                 name: result.package.name,
                 result: {
                     ...result,
-                    // 添加分类信息
                     category: categories.get(result.package.name) || 'other',
                     downloads: result.downloads || { all: 0 }
                 }
@@ -200,13 +205,22 @@ export async function fetchKoishiPlugins() {
         )
 
         const batchResults = await Promise.all(batchPromises)
-        plugins.push(...batchResults.filter(Boolean))
+        const validResults = batchResults.filter(Boolean)
+        skippedPackages += batchResults.length - validResults.length
+        plugins.push(...validResults)
 
         fromOffset += results.length
-        console.log(`已收集 ${fromOffset}/${totalPackages} 个包...`)
+        console.log(
+            `进度: ${fromOffset}/${totalPackages} | 已收录: ${plugins.length} | 已跳过: ${skippedPackages}`
+        )
 
         if (fromOffset >= totalPackages) break
     }
+
+    console.log(`\n扫描完成：`)
+    console.log(`- 总扫描数量: ${totalPackages}`)
+    console.log(`- 最终收录: ${plugins.length}`)
+    console.log(`- 已跳过: ${skippedPackages}`)
 
     return plugins
 }
