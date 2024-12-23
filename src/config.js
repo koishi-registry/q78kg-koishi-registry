@@ -10,7 +10,8 @@ const defaults = {
     NPM_PACKAGE_URL: 'https://www.npmjs.com',
     SEARCH_QUERY: 'koishi-plugin-',
     SEARCH_SIZE: '10000',
-    VALID_PACKAGE_PATTERN: '^(?:@[^/]+\/koishi-plugin-|@koishijs\/plugin-|koishi-plugin-)[\\w-]+$',
+    VALID_PACKAGE_PATTERN:
+        '^(?:@[^/]+\/koishi-plugin-|@koishijs\/plugin-|koishi-plugin-)[\\w-]+$',
     CATEGORIES_API_BASE: 'https://km-api.cyans.me/api/categories'
 }
 
@@ -23,13 +24,17 @@ export const config = {
 
     // API 配置
     MAX_RETRIES: parseInt(process.env.MAX_RETRIES || defaults.MAX_RETRIES),
-    REQUEST_TIMEOUT: parseInt(process.env.REQUEST_TIMEOUT || defaults.REQUEST_TIMEOUT),
+    REQUEST_TIMEOUT: parseInt(
+        process.env.REQUEST_TIMEOUT || defaults.REQUEST_TIMEOUT
+    ),
     OPTIMAL_WORKERS_MULTIPLIER: parseInt(
-        process.env.OPTIMAL_WORKERS_MULTIPLIER || defaults.OPTIMAL_WORKERS_MULTIPLIER
+        process.env.OPTIMAL_WORKERS_MULTIPLIER ||
+            defaults.OPTIMAL_WORKERS_MULTIPLIER
     ),
 
     // NPM 相关配置
-    NPM_REGISTRY_BASE: process.env.NPM_REGISTRY_BASE || defaults.NPM_REGISTRY_BASE,
+    NPM_REGISTRY_BASE:
+        process.env.NPM_REGISTRY_BASE || defaults.NPM_REGISTRY_BASE,
     NPM_PACKAGE_URL: process.env.NPM_PACKAGE_URL || defaults.NPM_PACKAGE_URL,
     SEARCH_QUERY: process.env.SEARCH_QUERY || defaults.SEARCH_QUERY,
     SEARCH_SIZE: parseInt(process.env.SEARCH_SIZE || defaults.SEARCH_SIZE),
@@ -38,5 +43,6 @@ export const config = {
     ),
 
     // 分类 API 配置
-    CATEGORIES_API_BASE: process.env.CATEGORIES_API_BASE || defaults.CATEGORIES_API_BASE
+    CATEGORIES_API_BASE:
+        process.env.CATEGORIES_API_BASE || defaults.CATEGORIES_API_BASE
 }

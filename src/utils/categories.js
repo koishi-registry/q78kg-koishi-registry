@@ -14,9 +14,14 @@ export async function loadCategories() {
 
         // 获取每个分类下的插件
         for (const category of categoryList) {
-            const categoryResponse = await fetch(`${config.CATEGORIES_API_BASE}/${category}/`)
+            const categoryResponse = await fetch(
+                `${config.CATEGORIES_API_BASE}/${category}/`
+            )
             if (!categoryResponse.ok) {
-                console.error(`获取分类 ${category} 失败:`, categoryResponse.status)
+                console.error(
+                    `获取分类 ${category} 失败:`,
+                    categoryResponse.status
+                )
                 continue
             }
             const { plugins } = await categoryResponse.json()
