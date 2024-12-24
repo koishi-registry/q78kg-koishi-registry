@@ -2,6 +2,7 @@ import fetch from 'node-fetch'
 import { config } from './config.js'
 import { calculatePackageScore } from './utils/scoring.js'
 import { loadCategories } from './utils/categories.js'
+import semver from 'semver'
 
 const NPM_SEARCH_URL = `${config.NPM_REGISTRY_BASE}/-/v1/search`
 
@@ -44,7 +45,9 @@ async function fetchPackageDetails(name, result) {
         const peerDeps = versionInfo.peerDependencies || {}
         if (peerDeps.koishi) {
             const versionRequirement = peerDeps.koishi
-            if (!versionRequirement.match(/(?:^|\D)4\.|\^4|\~4|>=4/)) {
+            const koishiV4Range = new semver.Range('^4.0.0')
+            const intersection = semver.intersects(versionRequirement, '^4.0.0')
+            if (!intersection) {
                 return null
             }
         }
