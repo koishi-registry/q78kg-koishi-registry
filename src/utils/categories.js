@@ -24,9 +24,8 @@ export async function loadCategories() {
                 }
             }
         }
-        console.log('加载分类数据')
     } catch (error) {
-        console.error('加载分类数据时出错:', error)
+        console.error('分类数据加载出错:', error)
     }
 
     return categories
