@@ -1,16 +1,14 @@
 import { MongoClient } from 'mongodb'
-
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017'
-const dbName = process.env.MONGODB_DB || 'koishi_registry'
+import { config } from './config.js'
 
 let client
 let db
 
 export async function connectDB() {
     try {
-        client = new MongoClient(uri)
+        client = new MongoClient(config.MONGODB_URI)
         await client.connect()
-        db = client.db(dbName)
+        db = client.db(config.MONGODB_DB)
         console.log('数据库连接成功')
         return db
     } catch (error) {

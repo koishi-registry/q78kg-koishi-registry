@@ -4,7 +4,22 @@ import { calculatePackageScore } from './utils/scoring.js'
 import { loadCategories } from './utils/categories.js'
 import semver from 'semver'
 
-const NPM_SEARCH_URL = `${config.NPM_REGISTRY_BASE}/-/v1/search`
+// 获取包的短名称
+function getPackageShortname(name) {
+    if (name.startsWith('@koishijs/')) {
+        return name.replace('@koishijs/plugin-', '')
+    } else if (name.startsWith('@')) {
+        const [scope, pkgName] = name.split('/')
+        return `${scope}/${pkgName.replace('koishi-plugin-', '')}`
+    } else {
+        return name.replace('koishi-plugin-', '')
+    }
+}
+
+// 验证包是否为官方包
+function isVerifiedPackage(name) {
+    return name.startsWith('@koishijs/')
+}
 
 async function fetchWithRetry(url, options, retries = config.MAX_RETRIES) {
     for (let i = 0; i < retries; i++) {
@@ -45,7 +60,10 @@ async function fetchPackageDetails(name, result) {
         const peerDeps = versionInfo.peerDependencies || {}
         if (peerDeps.koishi) {
             const versionRequirement = peerDeps.koishi
-            const intersection = semver.intersects(versionRequirement, '^4.0.0')
+            const intersection = semver.intersects(
+                versionRequirement,
+                config.KOISHI_VERSION_REQUIREMENT
+            )
             if (!intersection) {
                 return null
             }
@@ -92,18 +110,8 @@ async function fetchPackageDetails(name, result) {
                     : versionInfo.repository || ''
         }
 
-        const isVerified = name.startsWith('@koishijs/')
-
-        const shortname = (() => {
-            if (name.startsWith('@koishijs/')) {
-                return name.replace('@koishijs/plugin-', '')
-            } else if (name.startsWith('@')) {
-                const [scope, pkgName] = name.split('/')
-                return `${scope}/${pkgName.replace('koishi-plugin-', '')}`
-            } else {
-                return name.replace('koishi-plugin-', '')
-            }
-        })()
+        const isVerified = isVerifiedPackage(name)
+        const shortname = getPackageShortname(name)
 
         const manifest = versionInfo.koishi || pkgData.koishi || {}
         if (!manifest.description) {
@@ -188,7 +196,7 @@ export async function fetchKoishiPlugins() {
             from: fromOffset
         })
 
-        const data = await fetchWithRetry(`${NPM_SEARCH_URL}?${params}`)
+        const data = await fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`)
 
         if (!totalPackages) {
             totalPackages = data.total
