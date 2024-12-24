@@ -9,6 +9,7 @@ import {
 } from './fetcher.js'
 import fs from 'fs/promises'
 import { getPluginsCollection, closeDB } from './utils/db.js'
+import semver from 'semver'
 
 class Server {
     constructor() {
@@ -102,7 +103,6 @@ async function checkForUpdates() {
         from: 0
     })
 
-    // 获取搜索结果和数据库中的所有插件
     const [searchData, existingPlugins] = await Promise.all([
         fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
         collection
@@ -113,7 +113,6 @@ async function checkForUpdates() {
             .toArray()
     ])
 
-    // 创建现有插件的版本映射
     const existingVersions = new Map(
         existingPlugins.map((plugin) => [
             plugin.package.name,
@@ -121,7 +120,6 @@ async function checkForUpdates() {
         ])
     )
 
-    // 过滤出需要更新的包
     const packagesToUpdate = []
 
     for (const result of searchData.objects || []) {
@@ -131,7 +129,7 @@ async function checkForUpdates() {
             result.package.dist?.tags?.latest || result.package.version
         const currentVersion = existingVersions.get(result.package.name)
 
-        if (!currentVersion || currentVersion !== latestVersion) {
+        if (!currentVersion || semver.gt(latestVersion, currentVersion)) {
             packagesToUpdate.push({
                 name: result.package.name,
                 version: latestVersion,

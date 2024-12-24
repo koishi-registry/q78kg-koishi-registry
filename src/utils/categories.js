@@ -1,31 +1,71 @@
+import fetch from 'node-fetch'
+import { config } from '../config.js'
 import fs from 'fs/promises'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export async function loadCategories() {
     const categories = new Map()
-    const categoriesDir = path.join(__dirname, '..', 'categories')
+
+    // 本地获取模式
+    if (global.IS_LOCAL_CATEGORIES) {
+        try {
+            const categoriesPath = path.join(process.cwd(), 'categories')
+            const files = await fs.readdir(categoriesPath)
+
+            for (const file of files) {
+                if (file.endsWith('.txt')) {
+                    const category = file.slice(0, -4) // 移除 .txt 后缀
+                    const content = await fs.readFile(
+                        path.join(categoriesPath, file),
+                        'utf-8'
+                    )
+                    const plugins = content
+                        .split('\n')
+                        .filter((line) => line.trim())
+
+                    for (const plugin of plugins) {
+                        categories.set(plugin.trim(), category)
+                    }
+                }
+            }
+            console.log('使用本地文件加载分类数据')
+            return categories
+        } catch (error) {
+            console.error('从本地文件加载分类数据时出错:', error)
+            return categories
+        }
+    }
+
+    // API 模式
+    if (!config.CATEGORIES_API_BASE) {
+        console.warn(
+            '警告: 未配置分类API地址 (CATEGORIES_API_BASE)，将无法获取插件分类信息'
+        )
+        return categories
+    }
 
     try {
-        // 读取categories目录下的所有txt文件
-        const files = await fs.readdir(categoriesDir)
-        const txtFiles = files.filter((file) => file.endsWith('.txt'))
-
-        // 处理每个分类文件
-        for (const file of txtFiles) {
-            const category = path.basename(file, '.txt') // 获取不带.txt的文件名作为分类名
-            const content = await fs.readFile(
-                path.join(categoriesDir, file),
-                'utf-8'
+        // 获取所有分类列表
+        const categoriesResponse = await fetch(`${config.CATEGORIES_API_BASE}/`)
+        if (!categoriesResponse.ok) {
+            throw new Error(
+                `API请求失败: ${categoriesResponse.status} ${categoriesResponse.statusText}`
             )
+        }
+        const { categories: categoryList } = await categoriesResponse.json()
 
-            // 按行分割并过滤空行
-            const plugins = content
-                .split('\n')
-                .map((line) => line.trim())
-                .filter((line) => line && !line.startsWith('#'))
+        // 获取每个分类下的插件
+        for (const category of categoryList) {
+            const pluginsResponse = await fetch(
+                `${config.CATEGORIES_API_BASE}/${category}/`
+            )
+            if (!pluginsResponse.ok) {
+                console.warn(
+                    `获取 ${category} 分类数据失败: ${pluginsResponse.status} ${pluginsResponse.statusText}`
+                )
+                continue
+            }
+            const { plugins } = await pluginsResponse.json()
 
             // 为每个插件添加分类
             for (const plugin of plugins) {
@@ -33,7 +73,7 @@ export async function loadCategories() {
             }
         }
     } catch (error) {
-        console.error('从本地文件加载分类数据时出错:', error)
+        console.error('从API加载分类数据时出错:', error)
     }
 
     return categories

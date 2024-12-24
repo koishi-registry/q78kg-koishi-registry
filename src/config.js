@@ -1,5 +1,6 @@
 // 定义默认配置
 const defaults = {
+    // 基本配置
     SERVER_HOST: '0.0.0.0',
     SERVER_PORT: '3000',
     SCAN_CRON: '*/10 * * * *',
@@ -14,6 +15,8 @@ const defaults = {
         '^(?:@[^/]+\/koishi-plugin-|@koishijs\/plugin-|koishi-plugin-)[\\w-]+$',
     NPM_SEARCH_URL: 'https://registry.npmmirror.com/-/v1/search',
     KOISHI_VERSION_REQUIREMENT: '^4.0.0',
+
+    // MongoDB 配置
     MONGODB_URI: 'mongodb://127.0.0.1:27017',
     MONGODB_DB: 'koishi_registry'
 }
@@ -53,5 +56,8 @@ export const config = {
 
     // MongoDB 配置
     MONGODB_URI: process.env.MONGODB_URI || defaults.MONGODB_URI,
-    MONGODB_DB: process.env.MONGODB_DB || defaults.MONGODB_DB
+    MONGODB_DB: process.env.MONGODB_DB || defaults.MONGODB_DB,
+
+    // 分类 API 配置
+    CATEGORIES_API_BASE: process.env.CATEGORIES_API_BASE
 }
