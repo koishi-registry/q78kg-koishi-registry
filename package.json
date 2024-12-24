@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "express": "^4.18.2",
+    "mongodb": "^6.12.0",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
     "semver": "^7.6.3"

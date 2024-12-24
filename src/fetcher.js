@@ -21,7 +21,12 @@ function isVerifiedPackage(name) {
     return name.startsWith('@koishijs/')
 }
 
-async function fetchWithRetry(url, options, retries = config.MAX_RETRIES) {
+// 导出 fetchWithRetry
+export async function fetchWithRetry(
+    url,
+    options,
+    retries = config.MAX_RETRIES
+) {
     for (let i = 0; i < retries; i++) {
         try {
             const response = await fetch(url, {
@@ -41,7 +46,8 @@ async function fetchWithRetry(url, options, retries = config.MAX_RETRIES) {
     }
 }
 
-async function fetchPackageDetails(name, result) {
+// 导出 fetchPackageDetails
+export async function fetchPackageDetails(name, result) {
     try {
         const pkgUrl = `${config.NPM_REGISTRY_BASE}/${name}`
         const pkgData = await fetchWithRetry(pkgUrl)
@@ -177,6 +183,17 @@ async function fetchPackageDetails(name, result) {
     } catch (error) {
         console.error(`Error fetching ${name}:`, error)
         return null
+    }
+}
+
+// 导出 getCategoryForPackage
+export async function getCategoryForPackage(packageName) {
+    try {
+        const categories = await loadCategories()
+        return categories.get(packageName) || 'other'
+    } catch (error) {
+        console.error(`获取插件 ${packageName} 的分类失败:`, error)
+        return 'other'
     }
 }
 

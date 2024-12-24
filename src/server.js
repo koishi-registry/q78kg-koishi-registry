@@ -1,9 +1,14 @@
 import express from 'express'
 import cron from 'node-cron'
 import { config } from './config.js'
-import { fetchKoishiPlugins } from './fetcher.js'
+import {
+    fetchKoishiPlugins,
+    fetchWithRetry,
+    fetchPackageDetails,
+    getCategoryForPackage
+} from './fetcher.js'
 import fs from 'fs/promises'
-import { getPluginsCollection } from './db.js'
+import { getPluginsCollection, closeDB } from './utils/db.js'
 
 class Server {
     constructor() {
@@ -97,31 +102,84 @@ async function checkForUpdates() {
         from: 0
     })
 
-    const searchData = await fetchWithRetry(`${NPM_SEARCH_URL}?${params}`)
-    const updates = []
+    // 获取搜索结果和数据库中的所有插件
+    const [searchData, existingPlugins] = await Promise.all([
+        fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
+        collection
+            .find(
+                {},
+                { projection: { 'package.name': 1, 'package.version': 1 } }
+            )
+            .toArray()
+    ])
+
+    // 创建现有插件的版本映射
+    const existingVersions = new Map(
+        existingPlugins.map((plugin) => [
+            plugin.package.name,
+            plugin.package.version
+        ])
+    )
+
+    // 过滤出需要更新的包
+    const packagesToUpdate = []
 
     for (const result of searchData.objects || []) {
         if (!config.VALID_PACKAGE_PATTERN.test(result.package?.name)) continue
 
-        const existingPlugin = await collection.findOne({
-            'package.name': result.package.name,
-            'package.version': result.package.version
-        })
+        const latestVersion =
+            result.package.dist?.tags?.latest || result.package.version
+        const currentVersion = existingVersions.get(result.package.name)
 
-        if (!existingPlugin) {
-            const pluginData = await fetchPackageDetails(result.package.name, {
-                ...result,
-                category: await getCategoryForPackage(result.package.name),
-                downloads: result.downloads || { all: 0 }
+        if (!currentVersion || currentVersion !== latestVersion) {
+            packagesToUpdate.push({
+                name: result.package.name,
+                version: latestVersion,
+                result
             })
-            if (pluginData) {
-                updates.push(pluginData)
-            }
         }
     }
 
+    if (packagesToUpdate.length === 0) {
+        console.log('没有需要更新的包')
+        return 0
+    }
+
+    // 并行获取分类和详细信息
+    const updatesPromises = packagesToUpdate.map(async (p) => {
+        const category = await getCategoryForPackage(p.name)
+        const pluginData = await fetchPackageDetails(p.name, {
+            ...p.result,
+            category,
+            downloads: p.result.downloads || { all: 0 }
+        })
+        return pluginData
+    })
+
+    const updates = (await Promise.all(updatesPromises)).filter(Boolean)
+
     if (updates.length > 0) {
-        await saveToDatabase(updates)
+        // 批量更新数据库
+        const bulkOps = updates.map((update) => ({
+            updateOne: {
+                filter: { 'package.name': update.package.name },
+                update: { $set: update },
+                upsert: true
+            }
+        }))
+        await collection.bulkWrite(bulkOps)
+
+        // 添加详细的包更新信息
+        console.log(`更新了 ${updates.length} 个有效包:`)
+        updates.forEach((update) => {
+            const currentVersion = existingVersions.get(update.package.name)
+            const action = currentVersion ? '更新' : '新增'
+            console.log(
+                `- ${action}: ${update.package.name}@${update.package.version}${currentVersion ? ` (原版本: ${currentVersion})` : ''}`
+            )
+        })
+    } else {
+        console.log('没有有效的包需要更新')
     }
 
     return updates.length

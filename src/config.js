@@ -12,11 +12,10 @@ const defaults = {
     SEARCH_SIZE: '10000',
     VALID_PACKAGE_PATTERN:
         '^(?:@[^/]+\/koishi-plugin-|@koishijs\/plugin-|koishi-plugin-)[\\w-]+$',
-    CATEGORIES_API_BASE: 'https://km-api.cyans.me/api/categories',
     NPM_SEARCH_URL: 'https://registry.npmmirror.com/-/v1/search',
     KOISHI_VERSION_REQUIREMENT: '^4.0.0',
-    MONGODB_URI: 'mongodb://localhost:27017',
-    MONGODB_DB: 'koishi_registry',
+    MONGODB_URI: 'mongodb://127.0.0.1:27017',
+    MONGODB_DB: 'koishi_registry'
 }
 
 // 导出最终配置
@@ -46,10 +45,6 @@ export const config = {
         process.env.VALID_PACKAGE_PATTERN || defaults.VALID_PACKAGE_PATTERN
     ),
 
-    // 分类 API 配置
-    CATEGORIES_API_BASE:
-        process.env.CATEGORIES_API_BASE || defaults.CATEGORIES_API_BASE,
-
     // NPM API 相关
     NPM_SEARCH_URL: process.env.NPM_SEARCH_URL || defaults.NPM_SEARCH_URL,
     KOISHI_VERSION_REQUIREMENT:
@@ -58,5 +53,5 @@ export const config = {
 
     // MongoDB 配置
     MONGODB_URI: process.env.MONGODB_URI || defaults.MONGODB_URI,
-    MONGODB_DB: process.env.MONGODB_DB || defaults.MONGODB_DB,
+    MONGODB_DB: process.env.MONGODB_DB || defaults.MONGODB_DB
 }

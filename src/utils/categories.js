@@ -1,30 +1,31 @@
-import fetch from 'node-fetch'
-import { config } from '../config.js'
+import fs from 'fs/promises'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export async function loadCategories() {
     const categories = new Map()
+    const categoriesDir = path.join(__dirname, '..', 'categories')
 
     try {
-        // 获取所有分类列表
-        const response = await fetch(config.CATEGORIES_API_BASE)
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const { categories: categoryList } = await response.json()
+        // 读取categories目录下的所有txt文件
+        const files = await fs.readdir(categoriesDir)
+        const txtFiles = files.filter((file) => file.endsWith('.txt'))
 
-        // 获取每个分类下的插件
-        for (const category of categoryList) {
-            const categoryResponse = await fetch(
-                `${config.CATEGORIES_API_BASE}/${category}/`
+        // 处理每个分类文件
+        for (const file of txtFiles) {
+            const category = path.basename(file, '.txt') // 获取不带.txt的文件名作为分类名
+            const content = await fs.readFile(
+                path.join(categoriesDir, file),
+                'utf-8'
             )
-            if (!categoryResponse.ok) {
-                console.error(
-                    `获取分类 ${category} 失败:`,
-                    categoryResponse.status
-                )
-                continue
-            }
-            const { plugins } = await categoryResponse.json()
+
+            // 按行分割并过滤空行
+            const plugins = content
+                .split('\n')
+                .map((line) => line.trim())
+                .filter((line) => line && !line.startsWith('#'))
 
             // 为每个插件添加分类
             for (const plugin of plugins) {
@@ -32,7 +33,7 @@ export async function loadCategories() {
             }
         }
     } catch (error) {
-        console.error('从API加载分类数据时出错:', error)
+        console.error('从本地文件加载分类数据时出错:', error)
     }
 
     return categories
