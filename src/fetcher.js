@@ -45,7 +45,6 @@ async function fetchPackageDetails(name, result) {
         const peerDeps = versionInfo.peerDependencies || {}
         if (peerDeps.koishi) {
             const versionRequirement = peerDeps.koishi
-            const koishiV4Range = new semver.Range('^4.0.0')
             const intersection = semver.intersects(versionRequirement, '^4.0.0')
             if (!intersection) {
                 return null
