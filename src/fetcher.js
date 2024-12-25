@@ -46,8 +46,23 @@ export async function fetchWithRetry(
     }
 }
 
+// 添加获取不安全包列表的函数
+export async function fetchInsecurePackages() {
+    try {
+        const response = await fetchWithRetry(config.INSECURE_PACKAGES_URL)
+        return new Set(response)
+    } catch (error) {
+        console.error('获取不安全包列表失败:', error)
+        return new Set()
+    }
+}
+
 // 导出 fetchPackageDetails
-export async function fetchPackageDetails(name, result) {
+export async function fetchPackageDetails(
+    name,
+    result,
+    preloadedInsecurePackages = null
+) {
     try {
         const pkgUrl = `${config.NPM_REGISTRY_BASE}/${name}`
         const pkgData = await fetchWithRetry(pkgUrl)
@@ -139,6 +154,12 @@ export async function fetchPackageDetails(name, result) {
             lastMonth: result.downloads?.all || 0
         }
 
+        // 使用预加载的不安全包列表或重新获取
+        const insecurePackages =
+            preloadedInsecurePackages || (await fetchInsecurePackages())
+        const isInsecure =
+            insecurePackages.has(name) || manifest.insecure === true
+
         return {
             category: result.category || 'other',
             shortname,
@@ -170,14 +191,14 @@ export async function fetchPackageDetails(name, result) {
                 contributors
             },
             flags: {
-                insecure: 0
+                insecure: isInsecure ? 1 : 0
             },
             manifest,
             publishSize: versionInfo.dist?.unpackedSize || 0,
             installSize: versionInfo.dist?.size || 0,
             dependents: 0,
             downloads,
-            insecure: false,
+            insecure: isInsecure,
             ignored: false
         }
     } catch (error) {
@@ -191,7 +212,11 @@ export const getCategoryForPackage = getCategory
 
 export async function fetchKoishiPlugins() {
     // 加载分类信息（现在只会真正加载一次）
-    const categories = await loadCategories()
+    const [categories, insecurePackages] = await Promise.all([
+        loadCategories(),
+        fetchInsecurePackages() // 预先获取不安全包列表
+    ])
+
     const plugins = []
     let fromOffset = 0
     let totalPackages = null
@@ -227,9 +252,9 @@ export async function fetchKoishiPlugins() {
                 }
             }))
 
-        // 并行处理包详情
+        // 并行处理包详情，传入预加载的不安全包列表
         const batchPromises = validPackages.map(({ name, result }) =>
-            fetchPackageDetails(name, result)
+            fetchPackageDetails(name, result, insecurePackages)
         )
 
         const batchResults = await Promise.all(batchPromises)

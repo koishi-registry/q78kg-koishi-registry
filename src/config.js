@@ -24,7 +24,10 @@ const defaults = {
     NPM_PACKAGE_URL: 'https://www.npmjs.com',
     KOISHI_VERSION_REQUIREMENT: '^4.0.0',
     CATEGORIES_API_URL:
-        'https://koishi-registry.github.io/categories/bundle.json'
+        'https://koishi-registry.github.io/categories/bundle.json',
+
+    INSECURE_PACKAGES_URL:
+        'https://koishi-registry.github.io/insecures/index.json'
 }
 
 // 导出最终配置
@@ -62,5 +65,8 @@ export const config = {
         process.env.KOISHI_VERSION_REQUIREMENT ||
         defaults.KOISHI_VERSION_REQUIREMENT,
     CATEGORIES_API_URL:
-        process.env.CATEGORIES_API_URL || defaults.CATEGORIES_API_URL
+        process.env.CATEGORIES_API_URL || defaults.CATEGORIES_API_URL,
+
+    INSECURE_PACKAGES_URL:
+        process.env.INSECURE_PACKAGES_URL || defaults.INSECURE_PACKAGES_URL
 }

@@ -4,7 +4,8 @@ import { config } from './config.js'
 import {
     fetchKoishiPlugins,
     fetchWithRetry,
-    fetchPackageDetails
+    fetchPackageDetails,
+    fetchInsecurePackages
 } from './fetcher.js'
 import fs from 'fs/promises'
 import { getPluginsCollection, closeDB } from './utils/db.js'
@@ -104,39 +105,71 @@ async function checkForUpdates() {
     })
 
     try {
-        const [searchData, existingPlugins, categories] = await Promise.all([
-            fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
-            collection
-                .find(
-                    {},
-                    { projection: { 'package.name': 1, 'package.version': 1 } }
-                )
-                .toArray(),
-            loadCategories()
-        ])
+        const [searchData, existingPlugins, categories, insecurePackages] =
+            await Promise.all([
+                fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
+                collection
+                    .find(
+                        {},
+                        {
+                            projection: {
+                                'package.name': 1,
+                                'package.version': 1,
+                                insecure: 1
+                            }
+                        }
+                    )
+                    .toArray(),
+                loadCategories(),
+                fetchInsecurePackages()
+            ])
 
         const existingVersions = new Map(
             existingPlugins.map((plugin) => [
                 plugin.package.name,
-                plugin.package.version
+                {
+                    version: plugin.package.version,
+                    insecure: plugin.insecure
+                }
             ])
         )
 
         const packagesToUpdate = []
 
+        // 检查需要更新的包
         for (const result of searchData.objects || []) {
             if (!config.VALID_PACKAGE_PATTERN.test(result.package?.name))
                 continue
 
+            const name = result.package.name
             const latestVersion =
                 result.package.dist?.tags?.latest || result.package.version
-            const currentVersion = existingVersions.get(result.package.name)
+            const existing = existingVersions.get(name)
 
-            if (!currentVersion || semver.gt(latestVersion, currentVersion)) {
+            // 如果包不存在，版本更新，或安全状态可能改变，则需要更新
+            if (
+                !existing ||
+                semver.gt(latestVersion, existing.version) ||
+                existing.insecure !== insecurePackages.has(name)
+            ) {
                 packagesToUpdate.push({
-                    name: result.package.name,
+                    name,
                     version: latestVersion,
                     result
+                })
+            }
+        }
+
+        // 检查数据库中的包是否需要更新安全状态
+        for (const [name, info] of existingVersions) {
+            if (
+                !packagesToUpdate.some((p) => p.name === name) &&
+                info.insecure !== insecurePackages.has(name)
+            ) {
+                packagesToUpdate.push({
+                    name,
+                    version: info.version,
+                    result: { downloads: { all: 0 } } // 最小化必要信息
                 })
             }
         }
@@ -146,14 +179,18 @@ async function checkForUpdates() {
             return 0
         }
 
-        // 并行获取详细信息，使用预加载的分类信息
+        // 并行获取详细信息，使用预加载的分类和不安全包信息
         const updatesPromises = packagesToUpdate.map(async (p) => {
             const category = categories.get(p.name) || 'other'
-            const pluginData = await fetchPackageDetails(p.name, {
-                ...p.result,
-                category,
-                downloads: p.result.downloads || { all: 0 }
-            })
+            const pluginData = await fetchPackageDetails(
+                p.name,
+                {
+                    ...p.result,
+                    category,
+                    downloads: p.result.downloads || { all: 0 }
+                },
+                insecurePackages
+            )
             return pluginData
         })
 
@@ -171,12 +208,18 @@ async function checkForUpdates() {
             await collection.bulkWrite(bulkOps)
 
             // 添加详细的包更新信息
-            console.log(`更新了 ${updates.length} 个有效包:`)
+            console.log(`更新了 ${updates.length} 个包:`)
             updates.forEach((update) => {
-                const currentVersion = existingVersions.get(update.package.name)
-                const action = currentVersion ? '更新' : '新增'
+                const existing = existingVersions.get(update.package.name)
+                const action = existing ? '更新' : '新增'
+                const securityChange =
+                    existing && existing.insecure !== update.insecure
+                        ? `(安全状态: ${existing.insecure ? '不安全->安全' : '安全->不安全'})`
+                        : ''
                 console.log(
-                    `- ${action}: ${update.package.name}@${update.package.version}${currentVersion ? ` (原版本: ${currentVersion})` : ''}`
+                    `- ${action}: ${update.package.name}@${update.package.version}` +
+                        `${existing?.version ? ` (原版本: ${existing.version})` : ''}` +
+                        `${securityChange}`
                 )
             })
         } else {
