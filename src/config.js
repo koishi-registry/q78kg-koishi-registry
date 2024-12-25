@@ -57,7 +57,4 @@ export const config = {
     // MongoDB 配置
     MONGODB_URI: process.env.MONGODB_URI || defaults.MONGODB_URI,
     MONGODB_DB: process.env.MONGODB_DB || defaults.MONGODB_DB,
-
-    // 分类 API 配置
-    CATEGORIES_API_BASE: process.env.CATEGORIES_API_BASE
 }

@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { config } from './config.js'
 import { calculatePackageScore } from './utils/scoring.js'
-import { loadCategories } from './utils/categories.js'
+import { getCategory, loadCategories } from './utils/categories.js'
 import semver from 'semver'
 
 // 获取包的短名称
@@ -187,20 +187,11 @@ export async function fetchPackageDetails(name, result) {
 }
 
 // 导出 getCategoryForPackage
-export async function getCategoryForPackage(packageName) {
-    try {
-        const categories = await loadCategories()
-        return categories.get(packageName) || 'other'
-    } catch (error) {
-        console.error(`获取插件 ${packageName} 的分类失败:`, error)
-        return 'other'
-    }
-}
+export const getCategoryForPackage = getCategory
 
 export async function fetchKoishiPlugins() {
-    // 加载分类信息
+    // 加载分类信息（现在只会真正加载一次）
     const categories = await loadCategories()
-
     const plugins = []
     let fromOffset = 0
     let totalPackages = null
@@ -222,6 +213,7 @@ export async function fetchKoishiPlugins() {
         const results = data.objects || []
         if (!results.length) break
 
+        // 预处理所有有效的包，包括它们的分类信息
         const validPackages = results
             .filter((result) =>
                 config.VALID_PACKAGE_PATTERN.test(result.package?.name)

@@ -4,11 +4,11 @@ import { config } from './config.js'
 import {
     fetchKoishiPlugins,
     fetchWithRetry,
-    fetchPackageDetails,
-    getCategoryForPackage
+    fetchPackageDetails
 } from './fetcher.js'
 import fs from 'fs/promises'
 import { getPluginsCollection, closeDB } from './utils/db.js'
+import { loadCategories } from './utils/categories.js'
 import semver from 'semver'
 
 class Server {
@@ -103,84 +103,90 @@ async function checkForUpdates() {
         from: 0
     })
 
-    const [searchData, existingPlugins] = await Promise.all([
-        fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
-        collection
-            .find(
-                {},
-                { projection: { 'package.name': 1, 'package.version': 1 } }
-            )
-            .toArray()
-    ])
-
-    const existingVersions = new Map(
-        existingPlugins.map((plugin) => [
-            plugin.package.name,
-            plugin.package.version
+    try {
+        const [searchData, existingPlugins, categories] = await Promise.all([
+            fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
+            collection
+                .find(
+                    {},
+                    { projection: { 'package.name': 1, 'package.version': 1 } }
+                )
+                .toArray(),
+            loadCategories()
         ])
-    )
 
-    const packagesToUpdate = []
+        const existingVersions = new Map(
+            existingPlugins.map((plugin) => [
+                plugin.package.name,
+                plugin.package.version
+            ])
+        )
 
-    for (const result of searchData.objects || []) {
-        if (!config.VALID_PACKAGE_PATTERN.test(result.package?.name)) continue
+        const packagesToUpdate = []
 
-        const latestVersion =
-            result.package.dist?.tags?.latest || result.package.version
-        const currentVersion = existingVersions.get(result.package.name)
+        for (const result of searchData.objects || []) {
+            if (!config.VALID_PACKAGE_PATTERN.test(result.package?.name)) continue
 
-        if (!currentVersion || semver.gt(latestVersion, currentVersion)) {
-            packagesToUpdate.push({
-                name: result.package.name,
-                version: latestVersion,
-                result
-            })
-        }
-    }
+            const latestVersion =
+                result.package.dist?.tags?.latest || result.package.version
+            const currentVersion = existingVersions.get(result.package.name)
 
-    if (packagesToUpdate.length === 0) {
-        console.log('没有需要更新的包')
-        return 0
-    }
-
-    // 并行获取分类和详细信息
-    const updatesPromises = packagesToUpdate.map(async (p) => {
-        const category = await getCategoryForPackage(p.name)
-        const pluginData = await fetchPackageDetails(p.name, {
-            ...p.result,
-            category,
-            downloads: p.result.downloads || { all: 0 }
-        })
-        return pluginData
-    })
-
-    const updates = (await Promise.all(updatesPromises)).filter(Boolean)
-
-    if (updates.length > 0) {
-        // 批量更新数据库
-        const bulkOps = updates.map((update) => ({
-            updateOne: {
-                filter: { 'package.name': update.package.name },
-                update: { $set: update },
-                upsert: true
+            if (!currentVersion || semver.gt(latestVersion, currentVersion)) {
+                packagesToUpdate.push({
+                    name: result.package.name,
+                    version: latestVersion,
+                    result
+                })
             }
-        }))
-        await collection.bulkWrite(bulkOps)
+        }
 
-        // 添加详细的包更新信息
-        console.log(`更新了 ${updates.length} 个有效包:`)
-        updates.forEach((update) => {
-            const currentVersion = existingVersions.get(update.package.name)
-            const action = currentVersion ? '更新' : '新增'
-            console.log(
-                `- ${action}: ${update.package.name}@${update.package.version}${currentVersion ? ` (原版本: ${currentVersion})` : ''}`
-            )
+        if (packagesToUpdate.length === 0) {
+            console.log('没有需要更新的包')
+            return 0
+        }
+
+        // 并行获取详细信息，使用预加载的分类信息
+        const updatesPromises = packagesToUpdate.map(async (p) => {
+            const category = categories.get(p.name) || 'other'
+            const pluginData = await fetchPackageDetails(p.name, {
+                ...p.result,
+                category,
+                downloads: p.result.downloads || { all: 0 }
+            })
+            return pluginData
         })
-    } else {
-        console.log('没有有效的包需要更新')
-    }
 
-    return updates.length
+        const updates = (await Promise.all(updatesPromises)).filter(Boolean)
+
+        if (updates.length > 0) {
+            // 批量更新数据库
+            const bulkOps = updates.map((update) => ({
+                updateOne: {
+                    filter: { 'package.name': update.package.name },
+                    update: { $set: update },
+                    upsert: true
+                }
+            }))
+            await collection.bulkWrite(bulkOps)
+
+            // 添加详细的包更新信息
+            console.log(`更新了 ${updates.length} 个有效包:`)
+            updates.forEach((update) => {
+                const currentVersion = existingVersions.get(update.package.name)
+                const action = currentVersion ? '更新' : '新增'
+                console.log(
+                    `- ${action}: ${update.package.name}@${update.package.version}${currentVersion ? ` (原版本: ${currentVersion})` : ''}`
+                )
+            })
+        } else {
+            console.log('没有有效的包需要更新')
+        }
+
+        return updates.length
+    } catch (error) {
+        console.error('更新数据时出错:', error)
+        throw error
+    }
 }
 
 export async function scanOnly() {
