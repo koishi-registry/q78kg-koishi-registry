@@ -1,7 +1,7 @@
 import { getPluginsCollection, closeDB } from './utils/db.js'
-import { fetchKoishiPlugins } from './fetcher.js'
+import { fetchKoishiPlugins } from './utils/fetcher.js'
 import fs from 'fs/promises'
-import { checkForUpdates } from './updater.js'
+import { checkForUpdates } from './utils/update.js'
 
 export async function saveToFile(data, filename = 'public/index.json') {
     const output = {

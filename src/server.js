@@ -1,7 +1,7 @@
 import express from 'express'
 import cron from 'node-cron'
 import { config } from './config.js'
-import { checkForUpdates } from './updater.js'
+import { checkForUpdates } from './utils/update.js'
 import { loadFromDatabase } from './scanner.js'
 
 export class Server {

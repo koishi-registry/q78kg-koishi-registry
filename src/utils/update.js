@@ -1,6 +1,6 @@
-import { config } from './config.js'
-import { getPluginsCollection } from './utils/db.js'
-import { loadCategories } from './utils/categories.js'
+import { config } from '../config.js'
+import { getPluginsCollection } from './db.js'
+import { loadCategories } from './categories.js'
 import { fetchWithRetry, fetchPackageDetails, fetchInsecurePackages } from './fetcher.js'
 import semver from 'semver'
 

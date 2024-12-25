@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
-import { config } from './config.js'
-import { calculatePackageScore } from './utils/scoring.js'
-import { getCategory, loadCategories } from './utils/categories.js'
+import { config } from '../config.js'
+import { calculatePackageScore } from './scoring.js'
+import { getCategory, loadCategories } from './categories.js'
 import semver from 'semver'
 
 // 获取包的短名称
