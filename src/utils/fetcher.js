@@ -64,7 +64,7 @@ export async function fetchPackageDetails(
     preloadedInsecurePackages = null
 ) {
     try {
-        const pkgUrl = `${config.NPM_REGISTRY_BASE}/${name}`
+        const pkgUrl = `${config.NPM_REGISTRY}/${name}`
         const pkgData = await fetchWithRetry(pkgUrl)
 
         const latestVersion = pkgData['dist-tags']?.latest

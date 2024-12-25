@@ -13,7 +13,7 @@ const defaults = {
     MONGODB_DB: 'koishi_registry',
 
     // NPM 包搜索相关配置
-    NPM_REGISTRY_BASE: 'https://registry.npmmirror.com',
+    NPM_REGISTRY: 'https://registry.npmmirror.com',
     NPM_SEARCH_URL: 'https://registry.npmmirror.com/-/v1/search',
     SEARCH_QUERY: 'koishi-plugin-',
     SEARCH_SIZE: '10000',
@@ -50,8 +50,7 @@ export const config = {
     MONGODB_DB: process.env.MONGODB_DB || defaults.MONGODB_DB,
 
     // NPM 包搜索相关配置
-    NPM_REGISTRY_BASE:
-        process.env.NPM_REGISTRY_BASE || defaults.NPM_REGISTRY_BASE,
+    NPM_REGISTRY: process.env.NPM_REGISTRY || defaults.NPM_REGISTRY,
     NPM_SEARCH_URL: process.env.NPM_SEARCH_URL || defaults.NPM_SEARCH_URL,
     SEARCH_QUERY: process.env.SEARCH_QUERY || defaults.SEARCH_QUERY,
     SEARCH_SIZE: parseInt(process.env.SEARCH_SIZE || defaults.SEARCH_SIZE),

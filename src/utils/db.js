@@ -9,7 +9,7 @@ export async function connectDB() {
         client = new MongoClient(config.MONGODB_URI, {
             retryWrites: true,
             serverSelectionTimeoutMS: 5000,
-            socketTimeoutMS: 45000,
+            socketTimeoutMS: 45000
         })
         await client.connect()
         db = client.db(config.MONGODB_DB)
