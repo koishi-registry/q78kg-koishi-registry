@@ -1,5 +1,5 @@
-import fs from 'fs/promises'
-import path from 'path'
+import fetch from 'node-fetch'
+import { config } from '../config.js'
 
 class CategoryManager {
     constructor() {
@@ -7,43 +7,56 @@ class CategoryManager {
         this.loading = null
     }
 
+    async fetchWithRetry(url) {
+        let lastError
+
+        for (let i = 0; i < config.MAX_RETRIES; i++) {
+            try {
+                const response = await fetch(url, {
+                    timeout: config.REQUEST_TIMEOUT
+                })
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+                return await response.json()
+            } catch (error) {
+                lastError = error
+                console.error(`第 ${i + 1} 次获取分类数据失败:`, error)
+                if (i < config.MAX_RETRIES - 1) {
+                    // 等待 1 秒后重试
+                    await new Promise((resolve) => setTimeout(resolve, 1000))
+                }
+            }
+        }
+        throw lastError
+    }
+
     async loadCategories() {
-        // 如果已经加载过，直接返回缓存的数据
         if (this.categories) {
             return this.categories
         }
 
-        // 如果正在加载中，等待加载完成
         if (this.loading) {
             return this.loading
         }
 
-        // 开始加载
         this.loading = (async () => {
             const categories = new Map()
 
             try {
-                const categoriesPath = path.join(process.cwd(), 'categories')
-                const files = await fs.readdir(categoriesPath)
+                const categoryData = await this.fetchWithRetry(
+                    config.CATEGORIES_API_URL
+                )
 
-                for (const file of files) {
-                    if (file.endsWith('.txt')) {
-                        const category = file.slice(0, -4)
-                        const content = await fs.readFile(
-                            path.join(categoriesPath, file),
-                            'utf-8'
-                        )
-                        const plugins = content
-                            .split('\n')
-                            .filter((line) => line.trim())
-
-                        for (const plugin of plugins) {
-                            categories.set(plugin.trim(), category)
-                        }
+                for (const [category, plugins] of Object.entries(
+                    categoryData
+                )) {
+                    for (const plugin of plugins) {
+                        categories.set(plugin.trim(), category)
                     }
                 }
             } catch (error) {
-                console.error('分类数据加载出错:', error)
+                console.error('分类数据加载失败（已尝试所有重试）:', error)
             }
 
             this.categories = categories

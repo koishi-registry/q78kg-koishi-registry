@@ -125,7 +125,8 @@ async function checkForUpdates() {
         const packagesToUpdate = []
 
         for (const result of searchData.objects || []) {
-            if (!config.VALID_PACKAGE_PATTERN.test(result.package?.name)) continue
+            if (!config.VALID_PACKAGE_PATTERN.test(result.package?.name))
+                continue
 
             const latestVersion =
                 result.package.dist?.tags?.latest || result.package.version
