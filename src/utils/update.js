@@ -3,10 +3,10 @@ import { getPluginsCollection } from './db.js'
 import { loadCategories } from './categories.js'
 import {
     fetchWithRetry,
-    fetchPackageDetails,
-    fetchInsecurePackages
+    fetchPackageDetails
 } from './fetcher.js'
 import semver from 'semver'
+import { loadInsecurePackages } from './insecure.js'
 
 export async function checkForUpdates() {
     const collection = await getPluginsCollection()
@@ -27,7 +27,7 @@ export async function checkForUpdates() {
                 }
             )
             .toArray(),
-        fetchInsecurePackages()
+        loadInsecurePackages()
     ])
 
     // 创建现有版本的映射
