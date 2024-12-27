@@ -3,6 +3,7 @@ import { config } from '../config.js'
 import { calculatePackageScore } from './scoring.js'
 import { getCategory, loadCategories } from './categories.js'
 import semver from 'semver'
+import { loadInsecurePackages } from './insecure.js'
 
 // 获取包的短名称
 function getPackageShortname(name) {
@@ -46,22 +47,10 @@ export async function fetchWithRetry(
     }
 }
 
-// 添加获取不安全包列表的函数
-export async function fetchInsecurePackages() {
-    try {
-        const response = await fetchWithRetry(config.INSECURE_PACKAGES_URL)
-        return new Set(response)
-    } catch (error) {
-        console.error('获取不安全包列表失败:', error)
-        return new Set()
-    }
-}
-
 // 导出 fetchPackageDetails
 export async function fetchPackageDetails(
     name,
-    result,
-    preloadedInsecurePackages = null
+    result
 ) {
     try {
         const pkgUrl = `${config.NPM_REGISTRY}/${name}`
@@ -154,11 +143,9 @@ export async function fetchPackageDetails(
             lastMonth: result.downloads?.all || 0
         }
 
-        // 使用预加载的不安全包列表或重新获取
-        const insecurePackages =
-            preloadedInsecurePackages || (await fetchInsecurePackages())
-        const isInsecure =
-            insecurePackages.has(name) || manifest.insecure === true
+        // 使用新的缓存机制获取不安全包列表
+        const insecurePackages = await loadInsecurePackages()
+        const isInsecure = insecurePackages.has(name) || manifest.insecure === true
 
         return {
             category: result.category || 'other',
@@ -211,10 +198,10 @@ export async function fetchPackageDetails(
 export const getCategoryForPackage = getCategory
 
 export async function fetchKoishiPlugins() {
-    // 加载分类信息（现在只会真正加载一次）
+    // 预加载分类和不安全包列表
     const [categories, insecurePackages] = await Promise.all([
         loadCategories(),
-        fetchInsecurePackages() // 预先获取不安全包列表
+        loadInsecurePackages()
     ])
 
     const plugins = []
@@ -254,7 +241,7 @@ export async function fetchKoishiPlugins() {
 
         // 并行处理包详情，传入预加载的不安全包列表
         const batchPromises = validPackages.map(({ name, result }) =>
-            fetchPackageDetails(name, result, insecurePackages)
+            fetchPackageDetails(name, result)
         )
 
         const batchResults = await Promise.all(batchPromises)
