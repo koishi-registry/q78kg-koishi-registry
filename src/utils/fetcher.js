@@ -79,6 +79,11 @@ export async function fetchPackageDetails(
             }
         }
 
+        const koishiManifest = versionInfo.koishi || pkgData.koishi || {}
+        if (koishiManifest.hidden === true) {
+            return null
+        }
+
         const timeInfo = pkgData.time || {}
         const publisher = {
             name: versionInfo._npmUser?.name || '',
@@ -123,9 +128,8 @@ export async function fetchPackageDetails(
         const isVerified = isVerifiedPackage(name)
         const shortname = getPackageShortname(name)
 
-        const manifest = versionInfo.koishi || pkgData.koishi || {}
-        if (!manifest.description) {
-            manifest.description = { zh: versionInfo.description || '' }
+        if (!koishiManifest.description) {
+            koishiManifest.description = { zh: versionInfo.description || '' }
         }
 
         // 计算评分
@@ -145,7 +149,7 @@ export async function fetchPackageDetails(
 
         // 使用新的缓存机制获取不安全包列表
         const insecurePackages = await loadInsecurePackages()
-        const isInsecure = insecurePackages.has(name) || manifest.insecure === true
+        const isInsecure = insecurePackages.has(name) || koishiManifest.insecure === true
 
         return {
             category: result.category || 'other',
@@ -180,7 +184,7 @@ export async function fetchPackageDetails(
             flags: {
                 insecure: isInsecure ? 1 : 0
             },
-            manifest,
+            manifest: koishiManifest,
             publishSize: versionInfo.dist?.unpackedSize || 0,
             installSize: versionInfo.dist?.size || 0,
             dependents: 0,
@@ -199,7 +203,7 @@ export const getCategoryForPackage = getCategory
 
 export async function fetchKoishiPlugins() {
     // 预加载分类和不安全包列表
-    const [categories, insecurePackages] = await Promise.all([
+    const [categories, _insecurePackages] = await Promise.all([
         loadCategories(),
         loadInsecurePackages()
     ])
