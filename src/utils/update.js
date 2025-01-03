@@ -1,10 +1,7 @@
 import { config } from '../config.js'
 import { getPluginsCollection } from './db.js'
 import { loadCategories } from './categories.js'
-import {
-    fetchWithRetry,
-    fetchPackageDetails
-} from './fetcher.js'
+import { fetchWithRetry, fetchPackageDetails } from './fetcher.js'
 import semver from 'semver'
 import { loadInsecurePackages } from './insecure.js'
 
@@ -19,16 +16,42 @@ export async function checkForUpdates() {
     // 并行获取搜索数据、现有插件和不安全包列表
     const [searchData, existingPlugins, insecurePackages] = await Promise.all([
         fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
-        collection
-            .find(
-                {},
-                {
-                    projection: { 'package.name': 1, 'package.version': 1 }
-                }
-            )
-            .toArray(),
+        collection.find({}).toArray(),
         loadInsecurePackages()
     ])
+
+    let updatedCount = 0
+
+    // 首先检查并更新现有插件的安全状态
+    const securityUpdateOps = existingPlugins
+        .map((plugin) => {
+            const isCurrentlyInsecure = plugin.insecure || false
+            const shouldBeInsecure = insecurePackages.has(plugin.package.name)
+
+            if (isCurrentlyInsecure !== shouldBeInsecure) {
+                console.log(
+                    `更新包 ${plugin.package.name} 的安全状态: ${shouldBeInsecure ? '不安全' : '安全'}`
+                )
+                updatedCount++
+                return {
+                    updateOne: {
+                        filter: { 'package.name': plugin.package.name },
+                        update: {
+                            $set: {
+                                insecure: shouldBeInsecure,
+                                'flags.insecure': shouldBeInsecure ? 1 : 0
+                            }
+                        }
+                    }
+                }
+            }
+            return null
+        })
+        .filter(Boolean)
+
+    if (securityUpdateOps.length > 0) {
+        await collection.bulkWrite(securityUpdateOps)
+    }
 
     // 创建现有版本的映射
     const existingVersions = new Map(
@@ -100,5 +123,5 @@ export async function checkForUpdates() {
         console.log('没有有效的包需要更新')
     }
 
-    return updates.length
+    return updates.length + updatedCount // 返回总更新数量
 }

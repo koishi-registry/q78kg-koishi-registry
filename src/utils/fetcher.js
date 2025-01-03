@@ -48,10 +48,7 @@ export async function fetchWithRetry(
 }
 
 // 导出 fetchPackageDetails
-export async function fetchPackageDetails(
-    name,
-    result
-) {
+export async function fetchPackageDetails(name, result) {
     try {
         const pkgUrl = `${config.NPM_REGISTRY}/${name}`
         const pkgData = await fetchWithRetry(pkgUrl)
@@ -149,7 +146,8 @@ export async function fetchPackageDetails(
 
         // 使用新的缓存机制获取不安全包列表
         const insecurePackages = await loadInsecurePackages()
-        const isInsecure = insecurePackages.has(name) || koishiManifest.insecure === true
+        const isInsecure =
+            insecurePackages.has(name) || koishiManifest.insecure === true
 
         return {
             category: result.category || 'other',

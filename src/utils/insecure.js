@@ -71,5 +71,7 @@ class InsecurePackagesManager {
 const insecurePackagesManager = new InsecurePackagesManager()
 
 // 导出新的接口
-export const loadInsecurePackages = () => insecurePackagesManager.loadInsecurePackages()
-export const isPackageInsecure = (packageName) => insecurePackagesManager.isPackageInsecure(packageName) 
+export const loadInsecurePackages = () =>
+    insecurePackagesManager.loadInsecurePackages()
+export const isPackageInsecure = (packageName) =>
+    insecurePackagesManager.isPackageInsecure(packageName)
