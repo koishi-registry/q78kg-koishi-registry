@@ -63,17 +63,20 @@ export async function fetchPackageDetails(name, result) {
             return null
         }
 
-        // 检查 koishi 版本要求
+        // 检查是否有 peerDependencies
         const peerDeps = versionInfo.peerDependencies || {}
-        if (peerDeps.koishi) {
-            const versionRequirement = peerDeps.koishi
-            const intersection = semver.intersects(
-                versionRequirement,
-                config.KOISHI_VERSION_REQUIREMENT
-            )
-            if (!intersection) {
-                return null
-            }
+        if (!peerDeps.koishi) {
+            return null
+        }
+
+        // 检查 koishi 版本要求
+        const versionRequirement = peerDeps.koishi
+        const intersection = semver.intersects(
+            versionRequirement,
+            config.KOISHI_VERSION_REQUIREMENT
+        )
+        if (!intersection) {
+            return null
         }
 
         const koishiManifest = versionInfo.koishi || pkgData.koishi || {}
