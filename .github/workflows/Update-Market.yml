@@ -63,6 +63,8 @@ jobs:
 
                   cp /tmp/index.json index.json
 
+                  echo "" > .nojekyll
+
                   echo "$CUSTOM_DOMAIN" > CNAME
 
                   git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
