@@ -125,6 +125,16 @@ export async function fetchPackageDetails(name, result) {
                     : versionInfo.repository || ''
         }
 
+        if (!packageLinks.bugs) {
+            delete packageLinks.bugs;
+        }
+        if (!packageLinks.homepage) {
+            delete packageLinks.homepage;
+        }
+        if (!packageLinks.repository) {
+            delete packageLinks.repository;
+        }
+
         const isVerified = isVerifiedPackage(name)
         const shortname = getPackageShortname(name)
 
