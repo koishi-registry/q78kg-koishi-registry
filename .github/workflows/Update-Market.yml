@@ -65,11 +65,11 @@ jobs:
 
                   echo "" > .nojekyll
 
-                  # echo "$CUSTOM_DOMAIN" > CNAME
+                  echo "$CUSTOM_DOMAIN" > CNAME
 
                   git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
 
-                  # git add -f index.json .nojekyll
+                  git add -f index.json .nojekyll
                   git add -f index.json CNAME .nojekyll
                   git commit -m "Update market data and CNAME" || true
                   git push -f origin pages
