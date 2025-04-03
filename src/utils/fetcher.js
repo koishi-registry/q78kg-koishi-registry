@@ -97,19 +97,19 @@ export async function fetchPackageDetails(name, result) {
             username: maintainer.name || ''
         }))
 
-        const contributors = (versionInfo.contributors || []).map(
-            (contributor) => {
-                if (typeof contributor === 'string') {
-                    return { name: contributor }
-                }
-                return {
-                    name: contributor.name || '',
-                    email: contributor.email || '',
-                    url: contributor.url || '',
-                    username: contributor.name || ''
-                }
-            }
-        )
+        const contributors = Array.isArray(versionInfo.contributors) ? versionInfo.contributors.map(
+          (contributor) => {
+              if (typeof contributor === 'string') {
+                  return { name: contributor }
+              }
+              return {
+                  name: contributor.name || '',
+                  email: contributor.email || '',
+                  url: contributor.url || '',
+                  username: contributor.name || ''
+              }
+          }
+      ) : [];      
 
         const npmLink = name.startsWith('@')
             ? `${config.NPM_PACKAGE_URL}/${name}`
