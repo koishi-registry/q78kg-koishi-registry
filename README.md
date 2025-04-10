@@ -15,7 +15,7 @@ cd koishi-registry
 docker build --tag t4wefan/koishi-registry .
 ```
 
-请将your-image-name替换为您想要命名的镜像名称。如果需要替换注意在docker-compose文件中也需要修改
+你可以自定义镜像名称。如果需要替换注意在docker-compose文件中也需要修改
 
 ### 使用Docker Compose启动容器
 构建完镜像后，您可以使用Docker Compose启动容器。在项目根目录下运行以下命令：
