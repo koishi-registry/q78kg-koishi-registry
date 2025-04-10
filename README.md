@@ -5,14 +5,14 @@
 首先克隆仓库
 
 ```bash
-git clone https://github.com/t4wefan/koishi-registry
+git clone https://github.com/Hoshino-Yumetsuki/koishi-registry.git
 cd koishi-registry
 ```
 
 然后，您需要构建Docker镜像。在项目根目录下打开终端或命令提示符，然后运行以下命令：
 
 ```bash
-docker build --tag t4wefan/koishi-registry .
+docker build -t koishi-registry .
 ```
 
 你可以自定义镜像名称。如果需要替换注意在docker-compose文件中也需要修改
