@@ -9,7 +9,7 @@ services:
       # 可选：初始化数据库和凭据
       MONGO_INITDB_DATABASE: koishi_registry
 
-  koishi_registry:
+  koishi_registry: 
     image: t4wefan/koishi-registry
     container_name: koishi-registry
     ports:
