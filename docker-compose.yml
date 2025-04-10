@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  koishi-mongo:
+    image: mongo:latest
+    container_name: koishi-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      # 可选：初始化数据库和凭据
+      MONGO_INITDB_DATABASE: koishi_registry
+
+  koishi_registry: 
+    image: t4wefan/koishi-registry
+    container_name: koishi-registry
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://koishi-mongo:27017
