@@ -1,13 +1,15 @@
-FROM docker.1panel.live/library/node:lts-slim
+FROM node:lts
+
+# ARG https_proxy http://192.168.1.100:7890
+# ARG http_proxy http://192.168.1.100:7890
 
 COPY . /koishi-registry
 
 WORKDIR /koishi-registry
 
-RUN corepack enable
+RUN npm config set registry https://registry.npmmirror.com
+RUN npm install
 
-RUN yarn
 
 EXPOSE 3000
-
-CMD ["yarn", "scan"]
+CMD ["node", "./src/index.js" ,"--server"]
