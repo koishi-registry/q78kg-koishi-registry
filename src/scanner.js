@@ -17,7 +17,7 @@ export async function saveToFile(data, filename = 'public/index.json') {
 
     await fs.mkdir('public', { recursive: true })
     await fs.writeFile(filename, compressedJson, 'utf-8')
-    console.log(`数据已压缩并保存到文件: ${filename}`)
+    console.log(`数据已保存到文件: ${filename}`)
 }
 
 export async function saveToDatabase(plugins) {

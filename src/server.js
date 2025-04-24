@@ -45,7 +45,7 @@ export class Server {
             try {
                 // Compress the JSON data using our utility
                 const compressedJson = await compressJson(this.data)
-                
+
                 // Set content type and send the compressed JSON
                 res.setHeader('Content-Type', 'application/json')
                 res.send(compressedJson)
