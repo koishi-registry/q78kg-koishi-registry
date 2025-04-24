@@ -2,6 +2,7 @@ import { getPluginsCollection, closeDB } from './utils/db.js'
 import { fetchKoishiPlugins } from './utils/fetcher.js'
 import fs from 'fs/promises'
 import { checkForUpdates } from './utils/update.js'
+import { compressJson } from './utils/compressor.js'
 
 export async function saveToFile(data, filename = 'public/index.json') {
     const output = {
@@ -11,9 +12,12 @@ export async function saveToFile(data, filename = 'public/index.json') {
         objects: data
     }
 
+    // Compress the JSON data using our utility
+    const compressedJson = await compressJson(output)
+
     await fs.mkdir('public', { recursive: true })
-    await fs.writeFile(filename, JSON.stringify(output, null, 2), 'utf-8')
-    console.log(`数据已保存到文件: ${filename}`)
+    await fs.writeFile(filename, compressedJson, 'utf-8')
+    console.log(`数据已压缩并保存到文件: ${filename}`)
 }
 
 export async function saveToDatabase(plugins) {

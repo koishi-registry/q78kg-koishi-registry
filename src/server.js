@@ -3,6 +3,7 @@ import cron from 'node-cron'
 import { config } from './config.js'
 import { checkForUpdates } from './utils/update.js'
 import { loadFromDatabase } from './scanner.js'
+import { compressJson } from './utils/compressor.js'
 
 export class Server {
     constructor() {
@@ -40,8 +41,19 @@ export class Server {
         this.updateData()
         cron.schedule(config.SCAN_CRON, () => this.updateData())
 
-        this.app.get('/index.json', (_req, res) => {
-            res.json(this.data)
+        this.app.get('/index.json', async (_req, res) => {
+            try {
+                // Compress the JSON data using our utility
+                const compressedJson = await compressJson(this.data)
+                
+                // Set content type and send the compressed JSON
+                res.setHeader('Content-Type', 'application/json')
+                res.send(compressedJson)
+            } catch (error) {
+                console.error('处理JSON时出错:', error)
+                // Fallback to uncompressed JSON if compression fails
+                res.json(this.data)
+            }
         })
 
         this.app.listen(config.SERVER_PORT, config.SERVER_HOST, () => {
