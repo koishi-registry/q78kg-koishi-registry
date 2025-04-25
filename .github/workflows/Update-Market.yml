@@ -65,7 +65,7 @@ jobs:
 
                   echo "" > .nojekyll
 
-                  echo "$CUSTOM_DOMAIN" > CNAME
+                  # echo "$CUSTOM_DOMAIN" > CNAME
 
                   git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
 
