@@ -21,7 +21,6 @@ jobs:
 
             - name: Setup Environment
               run: |
-                  export COREPACK_NPM_REGISTRY="https://registry.npmmirror.com"
                   corepack enable
                   yarn set version stable
 
