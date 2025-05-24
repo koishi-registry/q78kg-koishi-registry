@@ -22,7 +22,7 @@ jobs:
             - name: Setup Environment
               run: |
                   corepack enable
-                  yarn set version stable
+                  corepack use yarn
 
             - name: Setup SSH
               env:
