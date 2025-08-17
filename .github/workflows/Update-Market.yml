@@ -1,26 +1,18 @@
-name: Update Market Test
+name: Update Market
 
 on:
     schedule:
-        - cron: '*/15 * * * *' # 每15分钟运行一次
+        - cron: '*/15 * * * *' # 每10分钟运行一次
     push:
         branches:
-            - beta
-    workflow_dispatch: # 手动触发
+            - main
 
 jobs:
     update-market:
         runs-on: ubuntu-latest
-        services:
-            mongodb:
-                image: mongo:4.4
-                ports:
-                    - 27017:27017
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
-              with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
@@ -31,55 +23,53 @@ jobs:
               run: |
                   corepack enable
                   corepack use yarn
+
+            - name: Setup SSH
+              env:
+                  DEPLOY_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+              run: |
+                  mkdir -p ~/.ssh/
+                  echo "$DEPLOY_KEY" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan github.com >> ~/.ssh/known_hosts
+
             - name: Setup Market
               run: |
                   yarn
+
             - name: Configure Git
+              env:
+                  GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
+                  GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
               run: |
-                  git config --global user.name "github-actions[bot]"
-                  git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git config --global user.name "$GIT_USER_NAME"
+                  git config --global user.email "$GIT_USER_EMAIL"
+
             - name: Sync
               env:
-                  MONGODB_URI: mongodb://localhost:27017
+                  MONGODB_URI: ${{ secrets.MONGODB_URI }}
                   CATEGORIES_API_BASE: ${{ secrets.CATEGORIES_API_BASE }}
-                  INCREMENTAL_UPDATE: "true"
-                  INCREMENTAL_UPDATE_TIMES: "3"
               run: |
                   yarn scan
+
             - name: Deploy to Pages Branch
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   CUSTOM_DOMAIN: ${{ secrets.CUSTOM_DOMAIN }}
               run: |
                   cp public/index.json /tmp/index.json
-                  
-                  # 如果存在更新计数器文件，也保存它
-                  if [ -f .update-counter ]; then
-                    cp .update-counter /tmp/.update-counter
-                  fi
 
                   git checkout --orphan pages
                   git reset --hard
 
                   cp /tmp/index.json index.json
-                  
-                  # 恢复更新计数器文件
-                  if [ -f /tmp/.update-counter ]; then
-                    cp /tmp/.update-counter .update-counter
-                  fi
 
                   echo "" > .nojekyll
-                  if [ -n "$CUSTOM_DOMAIN" ]; then
-                    echo "$CUSTOM_DOMAIN" > CNAME
-                  fi
-                  git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+
+                  echo "$CUSTOM_DOMAIN" > CNAME
+
+                  git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
+
                   git add -f index.json .nojekyll
-                  # 添加更新计数器文件
-                  if [ -f .update-counter ]; then
-                    git add -f .update-counter
-                  fi
-                  if [ -f CNAME ]; then
-                    git add -f CNAME
-                  fi
+                  git add -f index.json CNAME .nojekyll
                   git commit -m "Update market" || true
                   git push -f origin pages
