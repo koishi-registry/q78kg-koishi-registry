@@ -4,7 +4,7 @@ import { loadCategories } from './categories.js'
 import { fetchWithRetry, fetchPackageDetails } from './fetcher.js'
 import semver from 'semver'
 import { loadInsecurePackages } from './insecure.js'
-import { readUpdateCounter, incrementUpdateCounter, resetUpdateCounter, prepareUpdateCounter } from './update-counter.js'
+import { readUpdateCounter, incrementUpdateCounter, resetUpdateCounter } from './update-counter.js'
 
 export async function checkForUpdates() {
     // 记录开始时间
@@ -14,7 +14,7 @@ export async function checkForUpdates() {
     let removedCount = 0
 
     // 读取当前更新计数
-    const currentCount = readUpdateCounter();
+    const currentCount = await readUpdateCounter();
     let newCount = currentCount;
     
     // 判断是否需要进行全量更新
@@ -29,13 +29,13 @@ export async function checkForUpdates() {
         } else {
             console.log(`已完成 ${currentCount} 次增量更新，根据配置进行全量更新，正在清空数据库...`);
             // 重置计数器
-            newCount = resetUpdateCounter();
+            newCount = await resetUpdateCounter();
         }
         await collection.deleteMany({}); // 清空所有文档
         console.log('数据库已清空。');
     } else {
         // 增加计数
-        newCount = incrementUpdateCounter();
+        newCount = await incrementUpdateCounter();
         console.log(`执行增量更新 (${newCount}/${config.INCREMENTAL_UPDATE_TIMES})`);
     }
 
@@ -202,9 +202,6 @@ export async function checkForUpdates() {
     const durationSeconds = durationMs / 1000; // 转换为秒
 
     console.log(`本次数据库更新总耗时：${durationSeconds.toFixed(2)} 秒`);
-    
-    // 确保计数器文件已准备好，以便在部署时保存到 pages 分支
-    prepareUpdateCounter(newCount);
 
     return updates.length + updatedCount + removedCount // 返回总更新/移除数量
 }
