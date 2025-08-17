@@ -47,7 +47,9 @@ export async function saveUpdateCounter(count) {
             { 
                 $set: { 
                     count: count,
-                    lastUpdated: new Date()
+                    lastUpdated: new Date(),
+                    // 添加一个标记字段，表明这不是插件文档
+                    isSystemSetting: true
                 } 
             },
             { upsert: true }
@@ -75,7 +77,11 @@ export async function incrementUpdateCounter() {
             { _id: COUNTER_DOCUMENT_ID },
             { 
                 $inc: { count: 1 },
-                $set: { lastUpdated: new Date() }
+                $set: { 
+                    lastUpdated: new Date(),
+                    // 添加一个标记字段，表明这不是插件文档
+                    isSystemSetting: true
+                }
             },
             { 
                 upsert: true,
