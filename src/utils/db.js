@@ -21,11 +21,11 @@ export async function connectDB() {
     }
 }
 
-export async function getPluginsCollection() {
+export async function getPluginsCollection(collectionName = 'plugins') {
     if (!db || !client?.topology?.isConnected?.()) {
         await connectDB()
     }
-    return db.collection('plugins')
+    return db.collection(collectionName)
 }
 
 export async function closeDB() {

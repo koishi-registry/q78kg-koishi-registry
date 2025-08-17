@@ -48,7 +48,7 @@ export async function checkForUpdates() {
     // 并行获取搜索数据、现有插件和不安全包列表
     const [searchData, existingPlugins, insecurePackages] = await Promise.all([
         fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
-        collection.find({}).toArray(),
+        collection.find({ 'package.name': { $exists: true } }).toArray(), // 只获取有 package.name 的文档
         loadInsecurePackages()
     ])
 
@@ -91,7 +91,7 @@ export async function checkForUpdates() {
     }
 
     // 重新获取现有插件列表，因为可能已经移除了部分
-    const currentExistingPlugins = await collection.find({}).toArray();
+    const currentExistingPlugins = await collection.find({ 'package.name': { $exists: true } }).toArray();
 
     // 首先检查并更新现有插件的安全状态
     const securityUpdateOps = currentExistingPlugins
