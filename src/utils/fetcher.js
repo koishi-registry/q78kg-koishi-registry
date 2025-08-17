@@ -137,7 +137,7 @@ export async function fetchPackageDetails(name, result) {
         }
 
         const koishiManifest = versionInfo.koishi || pkgData.koishi || {}
-        if (koishiManifest.hidden === true) {
+        if (koishiManifest.hidden === true || koishiManifest.description?.hidden !== undefined) {
             return null
         }
 
