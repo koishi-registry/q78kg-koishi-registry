@@ -5,14 +5,13 @@
   "type": "object",
   "required": [
     "name",
-    "version",
-    "peerDependencies"
+    "version"
   ],
   "properties": {
     "name": {
       "type": "string",
       "description": "Package name",
-      "pattern": "^(@koishijs\\/plugin-[a-z0-9-]+|@[a-z0-9-]+\\/koishi-plugin-[a-z0-9-]+|koishi-plugin-[a-z0-9-]+)$"
+      "pattern": "^(@koishijs\\/plugin-[a-zA-Z0-9\\-_.]+|@[a-zA-Z0-9\\-_.]+\\/koishi-plugin-[a-zA-Z0-9\\-_.]+|koishi-plugin-[a-zA-Z0-9\\-_.]+)$"
     },
     "version": {
       "type": "string",
