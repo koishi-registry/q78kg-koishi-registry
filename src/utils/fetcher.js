@@ -152,6 +152,8 @@ export async function fetchPackageDetails(name, result) {
     // 检查 koishi 版本要求
     const peerDependencies = versionInfo.peerDependencies || {}
     const versionRequirement = peerDependencies.koishi
+
+    if(!peerDependencies || !versionRequirement)    return null
     
     // 如果没有指定 koishi 版本要求，则跳过版本检查
     if (versionRequirement) {
