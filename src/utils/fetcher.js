@@ -156,13 +156,29 @@ export async function fetchPackageDetails(name, result) {
     // 如果没有指定 koishi 版本要求，则跳过版本检查
     if (versionRequirement) {
       try {
-        const intersection = semver.intersects(
-          versionRequirement,
-          config.KOISHI_VERSION_REQUIREMENT
-        )
-        if (!intersection) {
-          console.log(`Package ${name} koishi version requirement not compatible, skipping.`)
-          return null
+        // 处理确切版本号的情况（包括预发布版本）
+        if (semver.valid(versionRequirement)) {
+          const requiredVersion = semver.clean(versionRequirement)
+          const majorVersion = semver.major(requiredVersion)
+          
+          // 如果主版本号匹配，则认为兼容
+          if (majorVersion === 4) {
+            // 兼容，继续处理
+            console.log(`Package ${name} uses exact version ${versionRequirement}, accepting as compatible with Koishi v4.`)
+          } else {
+            console.log(`Package ${name} requires Koishi v${majorVersion}, not compatible with v4, skipping.`)
+            return null
+          }
+        } else {
+          // 处理版本范围的情况
+          const intersection = semver.intersects(
+            versionRequirement,
+            config.KOISHI_VERSION_REQUIREMENT
+          )
+          if (!intersection) {
+            console.log(`Package ${name} koishi version requirement ${versionRequirement} not compatible with ${config.KOISHI_VERSION_REQUIREMENT}, skipping.`)
+            return null
+          }
         }
       } catch (error) {
         console.warn(`Invalid semver range for ${name}: ${versionRequirement}`)
