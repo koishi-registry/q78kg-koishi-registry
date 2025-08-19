@@ -219,14 +219,24 @@ export async function fetchPackageDetails(name, result) {
       ? `${config.NPM_PACKAGE_URL}/${name}`
       : `${config.NPM_PACKAGE_URL}/package/${name}`
 
+    // 处理仓库链接，移除 git+ 前缀
+    let repositoryUrl = ''
+    if (typeof versionInfo.repository === 'object') {
+      repositoryUrl = versionInfo.repository.url || ''
+    } else {
+      repositoryUrl = versionInfo.repository || ''
+    }
+    
+    // 移除 git+ 前缀
+    if (repositoryUrl.startsWith('git+')) {
+      repositoryUrl = repositoryUrl.substring(4)
+    }
+    
     const packageLinks = {
       npm: npmLink,
       bugs: versionInfo.bugs?.url || '',
       homepage: versionInfo.homepage || '',
-      repository:
-        typeof versionInfo.repository === 'object'
-          ? versionInfo.repository.url || ''
-          : versionInfo.repository || ''
+      repository: repositoryUrl
     }
 
     if (!packageLinks.bugs) {
