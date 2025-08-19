@@ -11,7 +11,7 @@
     "name": {
       "type": "string",
       "description": "Package name",
-      "pattern": "^(@koishijs\\/plugin-[a-zA-Z]+(-[a-zA-Z]+){0,4}|@[a-zA-Z0-9\\-]+\\/koishi-plugin-[a-zA-Z]+(-[a-zA-Z]+){0,4}|koishi-plugin-[a-zA-Z]+(-[a-zA-Z]+){0,4})$"
+      "pattern": "^(@koishijs\\/plugin-[a-zA-Z0-9]+(-[a-zA-Z0-9]+){0,4}|@[a-zA-Z0-9\\-]+\\/koishi-plugin-[a-zA-Z0-9]+(-[a-zA-Z0-9]+){0,4}|koishi-plugin-[a-zA-Z0-9]+(-[a-zA-Z0-9]+){0,4})$"
     },
     "version": {
       "type": "string",
