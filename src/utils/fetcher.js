@@ -145,7 +145,7 @@ export async function fetchPackageDetails(name, result) {
     // 使用 validatePackage 验证包数据
     const validatedPackage = validatePackage(versionInfo)
     if (!validatedPackage) {
-      console.log(`Package ${name} validation failed, skipping.`)
+      console.log(`Package ${name} validation failed, skipping.（错误信息请见此行的上一行）`)
       return null
     }
 
