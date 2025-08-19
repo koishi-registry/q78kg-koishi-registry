@@ -44,7 +44,6 @@ export async function checkForUpdates() {
   } else {
     // 增加计数
     newCount = await incrementUpdateCounter()
-    console.log(`执行增量更新 (${newCount}/${config.INCREMENTAL_UPDATE_TIMES})`)
   }
 
   const params = new URLSearchParams({
