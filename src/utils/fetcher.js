@@ -145,19 +145,29 @@ export async function fetchPackageDetails(name, result) {
     // 使用 validatePackage 验证包数据
     const validatedPackage = validatePackage(versionInfo)
     if (!validatedPackage) {
-      console.log(`Package ${name} validation failed, skipping.`)
+      console.log(`Package ${name} validation failed, skipping. (Error message seen on the line above this one)`);
       return null
     }
 
     // 检查 koishi 版本要求
-    const versionRequirement = versionInfo.peerDependencies.koishi
-    const intersection = semver.intersects(
-      versionRequirement,
-      config.KOISHI_VERSION_REQUIREMENT
-    )
-    if (!intersection) {
-      console.log(`Package ${name} koishi version requirement not compatible, skipping.`)
-      return null
+    const peerDependencies = versionInfo.peerDependencies || {}
+    const versionRequirement = peerDependencies.koishi
+    
+    // 如果没有指定 koishi 版本要求，则跳过版本检查
+    if (versionRequirement) {
+      try {
+        const intersection = semver.intersects(
+          versionRequirement,
+          config.KOISHI_VERSION_REQUIREMENT
+        )
+        if (!intersection) {
+          console.log(`Package ${name} koishi version requirement not compatible, skipping.`)
+          return null
+        }
+      } catch (error) {
+        console.warn(`Invalid semver range for ${name}: ${versionRequirement}`)
+        return null
+      }
     }
 
     const koishiManifest = versionInfo.koishi || pkgData.koishi || {}
