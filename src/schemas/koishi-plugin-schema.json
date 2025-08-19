@@ -5,14 +5,13 @@
   "type": "object",
   "required": [
     "name",
-    "version",
-    "peerDependencies"
+    "version"
   ],
   "properties": {
     "name": {
       "type": "string",
       "description": "Package name",
-      "pattern": "^(@koishijs\\/plugin-[a-z0-9-]+|@[a-z0-9-]+\\/koishi-plugin-[a-z0-9-]+|koishi-plugin-[a-z0-9-]+)$"
+      "pattern": "^(@koishijs\\/plugin-[a-zA-Z0-9]+(-[a-zA-Z0-9]+){0,4}|@[a-zA-Z0-9\\-]+\\/koishi-plugin-[a-zA-Z0-9]+(-[a-zA-Z0-9]+){0,4}|koishi-plugin-[a-zA-Z0-9]+(-[a-zA-Z0-9]+){0,4})$"
     },
     "version": {
       "type": "string",
@@ -299,9 +298,31 @@
         "hidden": {
           "type": "boolean",
           "description": "Hidden in plugin market"
+        },
+        "browser": {
+          "type": "boolean",
+          "description": "Browser compatibility"
+        },
+        "locales": {
+          "type": "array",
+          "description": "Supported locales",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recommendeds": {
+          "type": "array",
+          "description": "Recommended plugins",
+          "items": {
+            "type": "string"
+          }
+        },
+        "insecure": {
+          "type": "boolean",
+          "description": "Is insecure package"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     }
   },
   "additionalProperties": true

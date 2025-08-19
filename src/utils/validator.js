@@ -6,7 +6,11 @@ import schema from '../schemas/koishi-plugin-schema.json' with { type: 'json' }
 const ajv = new Ajv({ 
   allErrors: true,
   // 不要求所有属性都存在，只验证存在的属性是否符合规范
-  strictRequired: false
+  strictRequired: false,
+  // 允许缺少必需属性
+  removeAdditional: false,
+  useDefaults: true,
+  coerceTypes: true
 })
 addFormats(ajv)
 const validate = ajv.compile(schema)
