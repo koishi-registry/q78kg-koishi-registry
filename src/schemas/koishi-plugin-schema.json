@@ -1,56 +1,60 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Koishi 插件配置",
-  "description": "Koishi 插件 package.json 的规范定义",
+  "title": "Schema",
+  "description": "Schema for Koishi plugin package.json",
   "type": "object",
-  "required": ["name", "version", "peerDependencies"],
+  "required": [
+    "name",
+    "version",
+    "peerDependencies"
+  ],
   "properties": {
     "name": {
       "type": "string",
-      "description": "插件包名，必须符合特定格式",
+      "description": "Package name",
       "pattern": "^(@koishijs\\/plugin-[a-z0-9-]+|@[a-z0-9-]+\\/koishi-plugin-[a-z0-9-]+|koishi-plugin-[a-z0-9-]+)$"
     },
     "version": {
       "type": "string",
-      "description": "插件版本号，应符合语义化版本规范",
+      "description": "Package version",
       "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
     },
     "description": {
       "type": "string",
-      "description": "插件描述"
+      "description": "Package description"
     },
     "main": {
       "type": "string",
-      "description": "插件主入口文件"
-    },
-    "typings": {
-      "type": "string",
-      "description": "TypeScript 类型定义文件"
+      "description": "Main entry file"
     },
     "types": {
       "type": "string",
-      "description": "TypeScript 类型定义文件（替代 typings）"
+      "description": "TypeScript type definition file"
+    },
+    "typings": {
+      "type": "string",
+      "description": "TypeScript type definition file (alternative to types)"
     },
     "files": {
       "type": "array",
-      "description": "需要包含在发布包中的文件或目录",
+      "description": "Files or directories to include in the published package",
       "items": {
         "type": "string"
       }
     },
     "license": {
       "type": "string",
-      "description": "插件许可证"
+      "description": "Package license"
     },
     "author": {
       "oneOf": [
         {
           "type": "string",
-          "description": "作者信息（字符串格式）"
+          "description": "Author information (String)"
         },
         {
           "type": "object",
-          "description": "作者信息（对象格式）",
+          "description": "Author information (Object)",
           "properties": {
             "name": {
               "type": "string"
@@ -62,22 +66,24 @@
               "type": "string"
             }
           },
-          "required": ["name"]
+          "required": [
+            "name"
+          ]
         }
       ]
     },
     "contributors": {
       "type": "array",
-      "description": "贡献者列表，必须是数组格式",
+      "description": "Contributors list",
       "items": {
         "oneOf": [
           {
             "type": "string",
-            "description": "贡献者信息（字符串格式）"
+            "description": "Contributor information (String)"
           },
           {
             "type": "object",
-            "description": "贡献者信息（对象格式）",
+            "description": "Contributor information (Object)",
             "properties": {
               "name": {
                 "type": "string"
@@ -89,7 +95,9 @@
                 "type": "string"
               }
             },
-            "required": ["name"]
+            "required": [
+              "name"
+            ]
           }
         ]
       }
@@ -98,11 +106,11 @@
       "oneOf": [
         {
           "type": "string",
-          "description": "仓库地址（字符串格式）"
+          "description": "Repository address (String)"
         },
         {
           "type": "object",
-          "description": "仓库信息（对象格式）",
+          "description": "Repository information (Object)",
           "properties": {
             "type": {
               "type": "string"
@@ -111,7 +119,10 @@
               "type": "string"
             }
           },
-          "required": ["type", "url"]
+          "required": [
+            "type",
+            "url"
+          ]
         }
       ]
     },
@@ -119,11 +130,11 @@
       "oneOf": [
         {
           "type": "string",
-          "description": "问题追踪地址（字符串格式）"
+          "description": "Bug tracker address (String)"
         },
         {
           "type": "object",
-          "description": "问题追踪信息（对象格式）",
+          "description": "Bug tracker information (Object)",
           "properties": {
             "url": {
               "type": "string"
@@ -137,51 +148,53 @@
     },
     "homepage": {
       "type": "string",
-      "description": "项目主页"
+      "description": "Project homepage"
     },
     "keywords": {
       "type": "array",
-      "description": "关键词列表",
+      "description": "Keywords list",
       "items": {
         "type": "string"
       }
     },
     "peerDependencies": {
       "type": "object",
-      "description": "对等依赖",
-      "required": ["koishi"],
+      "description": "Peer dependencies",
+      "required": [
+        "koishi"
+      ],
       "properties": {
         "koishi": {
           "type": "string",
-          "description": "Koishi 版本要求"
+          "description": "Koishi version requirement"
         }
       }
     },
     "dependencies": {
       "type": "object",
-      "description": "依赖项"
+      "description": "Dependencies"
     },
     "devDependencies": {
       "type": "object",
-      "description": "开发依赖项"
+      "description": "Development dependencies"
     },
     "private": {
       "type": "boolean",
-      "description": "是否为私有包，不应为 true"
+      "description": "Is private package"
     },
     "koishi": {
       "type": "object",
-      "description": "Koishi 相关配置",
+      "description": "Koishi plugin extra metadata",
       "properties": {
         "description": {
           "oneOf": [
             {
               "type": "string",
-              "description": "插件描述（字符串格式）"
+              "description": "Plugin description (String)"
             },
             {
               "type": "object",
-              "description": "多语言插件描述",
+              "description": "Multilingual plugin description",
               "additionalProperties": {
                 "type": "string"
               }
@@ -190,25 +203,25 @@
         },
         "service": {
           "type": "object",
-          "description": "服务相关配置",
+          "description": "Service related configuration",
           "properties": {
             "required": {
               "type": "array",
-              "description": "必需的服务",
+              "description": "Required services",
               "items": {
                 "type": "string"
               }
             },
             "optional": {
               "type": "array",
-              "description": "可选的服务",
+              "description": "Optional services",
               "items": {
                 "type": "string"
               }
             },
             "implements": {
               "type": "array",
-              "description": "实现的服务",
+              "description": "Implemented services",
               "items": {
                 "type": "string"
               }
@@ -217,11 +230,11 @@
         },
         "preview": {
           "type": "boolean",
-          "description": "是否为预览版"
+          "description": "Is preview version"
         },
         "hidden": {
           "type": "boolean",
-          "description": "是否在插件市场中隐藏"
+          "description": "Hidden in plugin market"
         }
       },
       "additionalProperties": false

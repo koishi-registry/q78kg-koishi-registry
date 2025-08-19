@@ -4,7 +4,7 @@ import { scanOnly } from './scanner.js'
 const isServerMode = process.argv.includes('--server')
 
 if (isServerMode) {
-    startServer()
+  startServer()
 } else {
-    scanOnly()
+  scanOnly()
 }

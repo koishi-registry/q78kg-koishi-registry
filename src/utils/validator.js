@@ -1,6 +1,6 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
-import schema from '../schemas/koishi-plugin-schema.json' assert { type: 'json' }
+import schema from '../schemas/koishi-plugin-schema.json' with { type: 'json' }
 
 // 初始化验证器
 const ajv = new Ajv({ allErrors: true })
@@ -14,15 +14,25 @@ const validate = ajv.compile(schema)
  */
 export function validatePackage(pkgData) {
   // 基本验证：必须有 name, version, peerDependencies
-  if (!pkgData || !pkgData.name || !pkgData.version || !pkgData.peerDependencies) {
-    console.log(`Package validation failed: missing required fields (name, version, or peerDependencies)`)
+  if (
+    !pkgData ||
+    !pkgData.name ||
+    !pkgData.version ||
+    !pkgData.peerDependencies
+  ) {
+    console.log(
+      `Package validation failed: missing required fields (name, version, or peerDependencies)`
+    )
     return null
   }
 
   // 验证 name 格式
-  const namePattern = /^(@koishijs\/plugin-[a-z0-9-]+|@[a-z0-9-]+\/koishi-plugin-[a-z0-9-]+|koishi-plugin-[a-z0-9-]+)$/
+  const namePattern =
+    /^(@koishijs\/plugin-[a-z0-9-]+|@[a-z0-9-]+\/koishi-plugin-[a-z0-9-]+|koishi-plugin-[a-z0-9-]+)$/
   if (!namePattern.test(pkgData.name)) {
-    console.log(`Package validation failed: invalid name format - ${pkgData.name}`)
+    console.log(
+      `Package validation failed: invalid name format - ${pkgData.name}`
+    )
     return null
   }
 
@@ -46,10 +56,16 @@ export function validatePackage(pkgData) {
 
   // 验证 koishi 字段
   const koishiManifest = pkgData.koishi || {}
-  
+
   // 验证 hidden 字段位置是否正确
-  if (koishiManifest.description && typeof koishiManifest.description === 'object' && koishiManifest.description.hidden !== undefined) {
-    console.log(`Package validation failed: hidden field must be at koishi.hidden, not koishi.description.hidden`)
+  if (
+    koishiManifest.description &&
+    typeof koishiManifest.description === 'object' &&
+    koishiManifest.description.hidden !== undefined
+  ) {
+    console.log(
+      `Package validation failed: hidden field must be at koishi.hidden, not koishi.description.hidden`
+    )
     return null
   }
 

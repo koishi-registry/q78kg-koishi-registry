@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js --server",
     "scan": "node src/index.js",
-    "prettier": "prettier --write src"
+    "lint": "biome check && biome lint",
+    "lint-fix": "biome format --write && biome lint --write"
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -19,7 +20,7 @@
     "semver": "^7.6.3"
   },
   "devDependencies": {
-    "prettier": "^3.3.3"
+    "@biomejs/biome": "^2.2.0"
   },
   "packageManager": "yarn@4.9.1+sha512.4d6ab01b3f899acf40a54647f7fbabd7bb6ab70b8b2196e8a0cba3fb5e2fef2c9f659445c8959cc677353eeb643b9e4cca3b9e7448ad960dd84d5e111e07ce8c"
 }
