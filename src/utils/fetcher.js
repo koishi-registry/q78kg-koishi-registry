@@ -5,6 +5,7 @@ import { getCategory, loadCategories } from './categories.js'
 import semver from 'semver'
 import { loadInsecurePackages } from './insecure.js'
 import pLimit from 'p-limit'
+import { validatePackage } from './validator.js'
 
 // 针对 npmjs.org 官方源的并发限制器
 const npmjsLimiter = pLimit(config.NPMJS_CONCURRENT_REQUESTS)

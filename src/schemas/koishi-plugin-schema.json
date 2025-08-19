@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Koishi 插件配置",
+  "description": "Koishi 插件 package.json 的规范定义",
+  "type": "object",
+  "required": ["name", "version", "peerDependencies"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "插件包名，必须符合特定格式",
+      "pattern": "^(@koishijs\\/plugin-[a-z0-9-]+|@[a-z0-9-]+\\/koishi-plugin-[a-z0-9-]+|koishi-plugin-[a-z0-9-]+)$"
+    },
+    "version": {
+      "type": "string",
+      "description": "插件版本号，应符合语义化版本规范",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "插件描述"
+    },
+    "main": {
+      "type": "string",
+      "description": "插件主入口文件"
+    },
+    "typings": {
+      "type": "string",
+      "description": "TypeScript 类型定义文件"
+    },
+    "types": {
+      "type": "string",
+      "description": "TypeScript 类型定义文件（替代 typings）"
+    },
+    "files": {
+      "type": "array",
+      "description": "需要包含在发布包中的文件或目录",
+      "items": {
+        "type": "string"
+      }
+    },
+    "license": {
+      "type": "string",
+      "description": "插件许可证"
+    },
+    "author": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "作者信息（字符串格式）"
+        },
+        {
+          "type": "object",
+          "description": "作者信息（对象格式）",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": ["name"]
+        }
+      ]
+    },
+    "contributors": {
+      "type": "array",
+      "description": "贡献者列表，必须是数组格式",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "贡献者信息（字符串格式）"
+          },
+          {
+            "type": "object",
+            "description": "贡献者信息（对象格式）",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": ["name"]
+          }
+        ]
+      }
+    },
+    "repository": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "仓库地址（字符串格式）"
+        },
+        {
+          "type": "object",
+          "description": "仓库信息（对象格式）",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": ["type", "url"]
+        }
+      ]
+    },
+    "bugs": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "问题追踪地址（字符串格式）"
+        },
+        {
+          "type": "object",
+          "description": "问题追踪信息（对象格式）",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "homepage": {
+      "type": "string",
+      "description": "项目主页"
+    },
+    "keywords": {
+      "type": "array",
+      "description": "关键词列表",
+      "items": {
+        "type": "string"
+      }
+    },
+    "peerDependencies": {
+      "type": "object",
+      "description": "对等依赖",
+      "required": ["koishi"],
+      "properties": {
+        "koishi": {
+          "type": "string",
+          "description": "Koishi 版本要求"
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "依赖项"
+    },
+    "devDependencies": {
+      "type": "object",
+      "description": "开发依赖项"
+    },
+    "private": {
+      "type": "boolean",
+      "description": "是否为私有包，不应为 true"
+    },
+    "koishi": {
+      "type": "object",
+      "description": "Koishi 相关配置",
+      "properties": {
+        "description": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "插件描述（字符串格式）"
+            },
+            {
+              "type": "object",
+              "description": "多语言插件描述",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "service": {
+          "type": "object",
+          "description": "服务相关配置",
+          "properties": {
+            "required": {
+              "type": "array",
+              "description": "必需的服务",
+              "items": {
+                "type": "string"
+              }
+            },
+            "optional": {
+              "type": "array",
+              "description": "可选的服务",
+              "items": {
+                "type": "string"
+              }
+            },
+            "implements": {
+              "type": "array",
+              "description": "实现的服务",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "是否为预览版"
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "是否在插件市场中隐藏"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}
