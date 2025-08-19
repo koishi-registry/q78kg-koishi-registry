@@ -42,6 +42,13 @@
         "type": "string"
       }
     },
+    "scripts": {
+      "type": "object",
+      "description": "Package scripts",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
     "license": {
       "type": "string",
       "description": "Package license"
@@ -50,7 +57,7 @@
       "oneOf": [
         {
           "type": "string",
-          "description": "Author information (String)"
+          "description": "Author information (String format: 'Name <email> (url)')"
         },
         {
           "type": "object",
@@ -65,10 +72,7 @@
             "url": {
               "type": "string"
             }
-          },
-          "required": [
-            "name"
-          ]
+          }
         }
       ]
     },
@@ -79,7 +83,7 @@
         "oneOf": [
           {
             "type": "string",
-            "description": "Contributor information (String)"
+            "description": "Contributor information (String format: 'Name <email> (url)')"
           },
           {
             "type": "object",
@@ -94,10 +98,34 @@
               "url": {
                 "type": "string"
               }
-            },
-            "required": [
-              "name"
-            ]
+            }
+          }
+        ]
+      }
+    },
+    "maintainers": {
+      "type": "array",
+      "description": "Maintainers list",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Maintainer information (String format: 'Name <email> (url)')"
+          },
+          {
+            "type": "object",
+            "description": "Maintainer information (Object)",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            }
           }
         ]
       }
@@ -117,12 +145,12 @@
             },
             "url": {
               "type": "string"
+            },
+            "directory": {
+              "type": "string",
+              "description": "Directory within the repository (for monorepos)"
             }
-          },
-          "required": [
-            "type",
-            "url"
-          ]
+          }
         }
       ]
     },
@@ -168,19 +196,48 @@
           "type": "string",
           "description": "Koishi version requirement"
         }
+      },
+      "additionalProperties": {
+        "type": "string"
       }
     },
     "dependencies": {
       "type": "object",
-      "description": "Dependencies"
+      "description": "Dependencies",
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "devDependencies": {
       "type": "object",
-      "description": "Development dependencies"
+      "description": "Development dependencies",
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "private": {
       "type": "boolean",
       "description": "Is private package"
+    },
+    "publishConfig": {
+      "type": "object",
+      "description": "Publishing configuration",
+      "properties": {
+        "access": {
+          "type": "string",
+          "enum": ["public", "restricted"]
+        },
+        "registry": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
     },
     "koishi": {
       "type": "object",
@@ -222,6 +279,13 @@
             "implements": {
               "type": "array",
               "description": "Implemented services",
+              "items": {
+                "type": "string"
+              }
+            },
+            "require": {
+              "type": "array",
+              "description": "Required services (alternative to required)",
               "items": {
                 "type": "string"
               }
