@@ -4,6 +4,7 @@ import { calculatePackageScore } from './scoring.js'
 import { getCategory, loadCategories } from './categories.js'
 import semver from 'semver'
 import { loadInsecurePackages } from './insecure.js'
+import { validatePackage } from './validator.js'
 import pLimit from 'p-limit'
 
 // 针对 npmjs.org 官方源的并发限制器
@@ -141,29 +142,25 @@ export async function fetchPackageDetails(name, result) {
       return null
     }
 
-    // 检查是否有 peerDependencies
-    const peerDeps = versionInfo.peerDependencies || {}
-    if (!peerDeps.koishi) {
+    // 使用 validatePackage 验证包数据
+    const validatedPackage = validatePackage(versionInfo)
+    if (!validatedPackage) {
+      console.log(`Package ${name} validation failed, skipping.`)
       return null
     }
 
     // 检查 koishi 版本要求
-    const versionRequirement = peerDeps.koishi
+    const versionRequirement = versionInfo.peerDependencies.koishi
     const intersection = semver.intersects(
       versionRequirement,
       config.KOISHI_VERSION_REQUIREMENT
     )
     if (!intersection) {
+      console.log(`Package ${name} koishi version requirement not compatible, skipping.`)
       return null
     }
 
     const koishiManifest = versionInfo.koishi || pkgData.koishi || {}
-    if (
-      koishiManifest.hidden === true ||
-      koishiManifest.description?.hidden !== undefined
-    ) {
-      return null
-    }
 
     const timeInfo = pkgData.time || {}
     const publisher = {
