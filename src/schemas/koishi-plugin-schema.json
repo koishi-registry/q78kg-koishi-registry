@@ -31,8 +31,19 @@
       "description": "TypeScript type definition file"
     },
     "typings": {
-      "type": "string",
-      "description": "TypeScript type definition file (alternative to types)"
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "TypeScript type definition file (alternative to types)"
+        },
+        {
+          "type": "array",
+          "description": "Multiple TypeScript type definition files",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "files": {
       "type": "array",
@@ -302,13 +313,6 @@
         "browser": {
           "type": "boolean",
           "description": "Browser compatibility"
-        },
-        "locales": {
-          "type": "array",
-          "description": "Supported locales",
-          "items": {
-            "type": "string"
-          }
         },
         "recommendeds": {
           "type": "array",
