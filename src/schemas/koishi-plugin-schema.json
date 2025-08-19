@@ -299,9 +299,31 @@
         "hidden": {
           "type": "boolean",
           "description": "Hidden in plugin market"
+        },
+        "browser": {
+          "type": "boolean",
+          "description": "Browser compatibility"
+        },
+        "locales": {
+          "type": "array",
+          "description": "Supported locales",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recommendeds": {
+          "type": "array",
+          "description": "Recommended plugins",
+          "items": {
+            "type": "string"
+          }
+        },
+        "insecure": {
+          "type": "boolean",
+          "description": "Is insecure package"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     }
   },
   "additionalProperties": true
