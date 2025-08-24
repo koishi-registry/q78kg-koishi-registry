@@ -145,7 +145,9 @@ export async function fetchPackageDetails(name, result) {
     // 使用 validatePackage 验证包数据
     const validatedPackage = validatePackage(versionInfo)
     if (!validatedPackage) {
-      console.log(`Package ${name} validation failed, skipping. (Error message seen on the line above this one)`);
+      console.log(
+        `Package ${name} validation failed, skipping. (Error message seen on the line above this one)`
+      )
       return null
     }
 
@@ -153,8 +155,8 @@ export async function fetchPackageDetails(name, result) {
     const peerDependencies = versionInfo.peerDependencies || {}
     const versionRequirement = peerDependencies.koishi
 
-    if(!peerDependencies || !versionRequirement)    return null
-    
+    if (!peerDependencies || !versionRequirement) return null
+
     // 如果没有指定 koishi 版本要求，则跳过版本检查
     if (versionRequirement) {
       try {
@@ -162,13 +164,17 @@ export async function fetchPackageDetails(name, result) {
         if (semver.valid(versionRequirement)) {
           const requiredVersion = semver.clean(versionRequirement)
           const majorVersion = semver.major(requiredVersion)
-          
+
           // 如果主版本号匹配，则认为兼容
           if (majorVersion === 4) {
             // 兼容，继续处理
-            console.log(`Package ${name} uses exact version ${versionRequirement}, accepting as compatible with Koishi v4.`)
+            console.log(
+              `Package ${name} uses exact version ${versionRequirement}, accepting as compatible with Koishi v4.`
+            )
           } else {
-            console.log(`Package ${name} requires Koishi v${majorVersion}, not compatible with v4, skipping.`)
+            console.log(
+              `Package ${name} requires Koishi v${majorVersion}, not compatible with v4, skipping.`
+            )
             return null
           }
         } else {
@@ -178,11 +184,13 @@ export async function fetchPackageDetails(name, result) {
             config.KOISHI_VERSION_REQUIREMENT
           )
           if (!intersection) {
-            console.log(`Package ${name} koishi version requirement ${versionRequirement} not compatible with ${config.KOISHI_VERSION_REQUIREMENT}, skipping.`)
+            console.log(
+              `Package ${name} koishi version requirement ${versionRequirement} not compatible with ${config.KOISHI_VERSION_REQUIREMENT}, skipping.`
+            )
             return null
           }
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn(`Invalid semver range for ${name}: ${versionRequirement}`)
         return null
       }
@@ -228,12 +236,12 @@ export async function fetchPackageDetails(name, result) {
     } else {
       repositoryUrl = versionInfo.repository || ''
     }
-    
+
     // 移除 git+ 前缀
     if (repositoryUrl.startsWith('git+')) {
       repositoryUrl = repositoryUrl.substring(4)
     }
-    
+
     const packageLinks = {
       npm: npmLink,
       bugs: versionInfo.bugs?.url || '',

@@ -235,7 +235,10 @@
       "properties": {
         "access": {
           "type": "string",
-          "enum": ["public", "restricted"]
+          "enum": [
+            "public",
+            "restricted"
+          ]
         },
         "registry": {
           "type": "string"

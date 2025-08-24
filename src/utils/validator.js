@@ -3,7 +3,7 @@ import addFormats from 'ajv-formats'
 import schema from '../schemas/koishi-plugin-schema.json' with { type: 'json' }
 
 // 初始化验证器
-const ajv = new Ajv({ 
+const ajv = new Ajv({
   allErrors: true,
   // 不要求所有属性都存在，只验证存在的属性是否符合规范
   strictRequired: false,
