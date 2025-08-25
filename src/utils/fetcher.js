@@ -3,7 +3,7 @@ import { config } from '../config.js'
 import { calculatePackageScore } from './scoring.js'
 import { getCategory, loadCategories } from './categories.js'
 import semver from 'semver'
-import { loadInsecurePackages } from './insecure.js'
+import { loadInsecurePackages, isPackageInsecure } from './insecure.js'
 import { validatePackage } from './validator.js'
 import pLimit from 'p-limit'
 
@@ -213,16 +213,16 @@ export async function fetchPackageDetails(name, result) {
 
     const contributors = Array.isArray(versionInfo.contributors)
       ? versionInfo.contributors.map((contributor) => {
-          if (typeof contributor === 'string') {
-            return { name: contributor }
-          }
-          return {
-            name: contributor.name || '',
-            email: contributor.email || '',
-            url: contributor.url || '',
-            username: contributor.name || ''
-          }
-        })
+        if (typeof contributor === 'string') {
+          return { name: contributor }
+        }
+        return {
+          name: contributor.name || '',
+          email: contributor.email || '',
+          url: contributor.url || '',
+          username: contributor.name || ''
+        }
+      })
       : []
 
     const npmLink = name.startsWith('@')
@@ -281,10 +281,8 @@ export async function fetchPackageDetails(name, result) {
       lastMonth: result.downloads?.all || 0
     }
 
-    // 使用新的缓存机制获取不安全包列表
-    const insecurePackages = await loadInsecurePackages()
-    const isInsecure =
-      insecurePackages.has(name) || koishiManifest.insecure === true
+    // 检查包是否不安全
+    const isInsecure = await isPackageInsecure(name, versionInfo) || koishiManifest.insecure === true
 
     return {
       category: result.category || 'other',
