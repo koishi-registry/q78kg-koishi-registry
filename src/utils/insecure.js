@@ -1,6 +1,12 @@
 import fetch from 'node-fetch'
 import { config } from '../config.js'
 
+const UNSAFE_DEPENDENCIES = new Set([
+  'sharp',
+  'puppeteer',
+  'canvas'
+])
+
 class InsecurePackagesManager {
   constructor() {
     this.insecurePackages = null
@@ -61,9 +67,35 @@ class InsecurePackagesManager {
     }
   }
 
-  async isPackageInsecure(packageName) {
+  async isPackageInsecure(packageName, packageData = null) {
     const insecurePackages = await this.loadInsecurePackages()
-    return insecurePackages.has(packageName)
+
+    if (insecurePackages.has(packageName)) {
+      return true
+    }
+
+    if (packageData) {
+      return this.checkDependenciesForUnsafePackages(packageData)
+    }
+
+    return false
+  }
+
+  checkDependenciesForUnsafePackages(packageData) {
+    const allDeps = {
+      ...packageData.dependencies,
+      ...packageData.devDependencies,
+      ...packageData.peerDependencies,
+      ...packageData.optionalDependencies
+    }
+
+    for (const depName of Object.keys(allDeps)) {
+      if (UNSAFE_DEPENDENCIES.has(depName)) {
+        return true
+      }
+    }
+
+    return false
   }
 }
 
