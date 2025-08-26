@@ -3,7 +3,7 @@ import { getPluginsCollection } from './db.js'
 import { loadCategories } from './categories.js'
 import { fetchWithRetry, fetchPackageDetails } from './fetcher.js'
 import semver from 'semver'
-import { loadInsecurePackages } from './insecure.js'
+import { loadInsecurePackages, isPackageInsecure } from './insecure.js'
 import {
   readUpdateCounter,
   incrementUpdateCounter,
@@ -123,31 +123,29 @@ export async function checkForUpdates() {
     .toArray()
 
   // 首先检查并更新现有插件的安全状态
-  const securityUpdateOps = currentExistingPlugins
-    .map((plugin) => {
-      const isCurrentlyInsecure = plugin.insecure || false
-      const shouldBeInsecure = insecurePackages.has(plugin.package.name)
+  const securityUpdateOps = []
+  for (const plugin of currentExistingPlugins) {
+    const isCurrentlyInsecure = plugin.insecure || false
+    const shouldBeInsecure = await isPackageInsecure(plugin.package.name, plugin)
 
-      if (isCurrentlyInsecure !== shouldBeInsecure) {
-        console.log(
-          `更新包 ${plugin.package.name} 的安全状态: ${shouldBeInsecure ? '不安全' : '安全'}`
-        )
-        updatedCount++
-        return {
-          updateOne: {
-            filter: { 'package.name': plugin.package.name },
-            update: {
-              $set: {
-                insecure: shouldBeInsecure,
-                'flags.insecure': shouldBeInsecure ? 1 : 0
-              }
+    if (isCurrentlyInsecure !== shouldBeInsecure) {
+      console.log(
+        `更新包 ${plugin.package.name} 的安全状态: ${shouldBeInsecure ? '不安全' : '安全'}`
+      )
+      updatedCount++
+      securityUpdateOps.push({
+        updateOne: {
+          filter: { 'package.name': plugin.package.name },
+          update: {
+            $set: {
+              insecure: shouldBeInsecure,
+              'flags.insecure': shouldBeInsecure ? 1 : 0
             }
           }
         }
-      }
-      return null
-    })
-    .filter(Boolean)
+      })
+    }
+  }
 
   if (securityUpdateOps.length > 0) {
     await collection.bulkWrite(securityUpdateOps)
@@ -199,7 +197,7 @@ export async function checkForUpdates() {
   // 并行获取需要更新的包的详细信息
   // fetchPackageDetails 内部会再次验证 npmjs 官方源，确保新增/更新的包也有效
   const updatesPromises = packagesToUpdate.map(async (p) => {
-    return await fetchPackageDetails(p.name, p.result, insecurePackages)
+    return await fetchPackageDetails(p.name, p.result)
   })
 
   const updates = (await Promise.all(updatesPromises)).filter(Boolean)
@@ -221,8 +219,7 @@ export async function checkForUpdates() {
       const currentVersion = existingVersions.get(update.package.name)
       const action = currentVersion ? '更新' : '新增'
       console.log(
-        `- ${action}: ${update.package.name}@${update.package.version}${
-          currentVersion ? ` (原版本: ${currentVersion})` : ''
+        `- ${action}: ${update.package.name}@${update.package.version}${currentVersion ? ` (原版本: ${currentVersion})` : ''
         }`
       )
     })
