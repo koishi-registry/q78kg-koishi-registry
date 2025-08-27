@@ -126,24 +126,35 @@ export async function checkForUpdates() {
   const securityUpdateOps = []
   for (const plugin of currentExistingPlugins) {
     const isCurrentlyInsecure = plugin.insecure || false
-    const shouldBeInsecure = await isPackageInsecure(plugin.package.name, plugin)
+    
+    // 需要重新获取包的完整信息来检查依赖
+    try {
+      const pkgUrl = `${config.NPM_REGISTRY}/${plugin.package.name}`
+      const pkgData = await fetchWithRetry(pkgUrl)
+      const latestVersion = pkgData['dist-tags']?.latest
+      const versionInfo = latestVersion ? pkgData.versions?.[latestVersion] : {}
+      
+      const shouldBeInsecure = await isPackageInsecure(plugin.package.name, versionInfo)
 
-    if (isCurrentlyInsecure !== shouldBeInsecure) {
-      console.log(
-        `更新包 ${plugin.package.name} 的安全状态: ${shouldBeInsecure ? '不安全' : '安全'}`
-      )
-      updatedCount++
-      securityUpdateOps.push({
-        updateOne: {
-          filter: { 'package.name': plugin.package.name },
-          update: {
-            $set: {
-              insecure: shouldBeInsecure,
-              'flags.insecure': shouldBeInsecure ? 1 : 0
+      if (isCurrentlyInsecure !== shouldBeInsecure) {
+        console.log(
+          `更新包 ${plugin.package.name} 的安全状态: ${shouldBeInsecure ? '不安全' : '安全'}`
+        )
+        updatedCount++
+        securityUpdateOps.push({
+          updateOne: {
+            filter: { 'package.name': plugin.package.name },
+            update: {
+              $set: {
+                insecure: shouldBeInsecure,
+                'flags.insecure': shouldBeInsecure ? 1 : 0
+              }
             }
           }
-        }
-      })
+        })
+      }
+    } catch (error) {
+      console.warn(`检查包 ${plugin.package.name} 安全状态时出错:`, error.message)
     }
   }
 
@@ -197,7 +208,7 @@ export async function checkForUpdates() {
   // 并行获取需要更新的包的详细信息
   // fetchPackageDetails 内部会再次验证 npmjs 官方源，确保新增/更新的包也有效
   const updatesPromises = packagesToUpdate.map(async (p) => {
-    return await fetchPackageDetails(p.name, p.result, insecurePackages)
+    return await fetchPackageDetails(p.name, p.result)
   })
 
   const updates = (await Promise.all(updatesPromises)).filter(Boolean)
