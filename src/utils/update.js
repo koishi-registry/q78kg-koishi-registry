@@ -197,7 +197,7 @@ export async function checkForUpdates() {
   // 并行获取需要更新的包的详细信息
   // fetchPackageDetails 内部会再次验证 npmjs 官方源，确保新增/更新的包也有效
   const updatesPromises = packagesToUpdate.map(async (p) => {
-    return await fetchPackageDetails(p.name, p.result)
+    return await fetchPackageDetails(p.name, p.result, insecurePackages)
   })
 
   const updates = (await Promise.all(updatesPromises)).filter(Boolean)

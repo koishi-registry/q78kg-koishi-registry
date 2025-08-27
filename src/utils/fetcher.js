@@ -110,7 +110,7 @@ export async function fetchWithRetry(
 }
 
 // 导出 fetchPackageDetails
-export async function fetchPackageDetails(name, result) {
+export async function fetchPackageDetails(name, result, insecurePackages = null) {
   try {
     const npmjsOfficialUrl = `https://registry.npmjs.org/${name}` // npmjs 官方源地址
     const officialResponse = await fetchWithRetry(
@@ -282,7 +282,32 @@ export async function fetchPackageDetails(name, result) {
     }
 
     // 检查包是否不安全
-    const isInsecure = await isPackageInsecure(name, versionInfo) || koishiManifest.insecure === true
+    let isInsecure = koishiManifest.insecure === true
+    if (!isInsecure) {
+      if (insecurePackages) {
+        // 如果传入了insecurePackages参数，直接使用
+        isInsecure = insecurePackages.has(name)
+        if (!isInsecure) {
+          // 检查依赖中是否包含不安全的包
+          const allDeps = {
+            ...versionInfo.dependencies,
+            ...versionInfo.devDependencies,
+            ...versionInfo.peerDependencies,
+            ...versionInfo.optionalDependencies
+          }
+          const UNSAFE_DEPENDENCIES = new Set(['sharp', 'puppeteer', 'canvas'])
+          for (const depName of Object.keys(allDeps)) {
+            if (UNSAFE_DEPENDENCIES.has(depName)) {
+              isInsecure = true
+              break
+            }
+          }
+        }
+      } else {
+        // 如果没有传入insecurePackages参数，使用原来的方法
+        isInsecure = await isPackageInsecure(name, versionInfo)
+      }
+    }
 
     return {
       category: result.category || 'other',
@@ -378,7 +403,7 @@ export async function fetchKoishiPlugins() {
 
     // 并行处理包详情，传入预加载的不安全包列表
     const batchPromises = validPackages.map(({ name, result }) =>
-      fetchPackageDetails(name, result)
+      fetchPackageDetails(name, result, _insecurePackages)
     )
 
     const batchResults = await Promise.all(batchPromises)
