@@ -122,45 +122,8 @@ export async function checkForUpdates() {
     .find({ 'package.name': { $exists: true } })
     .toArray()
 
-  // 首先检查并更新现有插件的安全状态
-  const securityUpdateOps = []
-  for (const plugin of currentExistingPlugins) {
-    const isCurrentlyInsecure = plugin.insecure || false
-    
-    // 需要重新获取包的完整信息来检查依赖
-    try {
-      const pkgUrl = `${config.NPM_REGISTRY}/${plugin.package.name}`
-      const pkgData = await fetchWithRetry(pkgUrl)
-      const latestVersion = pkgData['dist-tags']?.latest
-      const versionInfo = latestVersion ? pkgData.versions?.[latestVersion] : {}
-      
-      const shouldBeInsecure = await isPackageInsecure(plugin.package.name, versionInfo)
-
-      if (isCurrentlyInsecure !== shouldBeInsecure) {
-        console.log(
-          `更新包 ${plugin.package.name} 的安全状态: ${shouldBeInsecure ? '不安全' : '安全'}`
-        )
-        updatedCount++
-        securityUpdateOps.push({
-          updateOne: {
-            filter: { 'package.name': plugin.package.name },
-            update: {
-              $set: {
-                insecure: shouldBeInsecure,
-                'flags.insecure': shouldBeInsecure ? 1 : 0
-              }
-            }
-          }
-        })
-      }
-    } catch (error) {
-      console.warn(`检查包 ${plugin.package.name} 安全状态时出错:`, error.message)
-    }
-  }
-
-  if (securityUpdateOps.length > 0) {
-    await collection.bulkWrite(securityUpdateOps)
-  }
+  // 增量更新时不修改现有插件的 insecure 状态
+  // 全量更新时数据库已被清空，所有包都会重新处理
 
   // 创建现有版本的映射 (基于重新获取的列表)
   const existingVersions = new Map(
