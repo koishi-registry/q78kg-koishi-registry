@@ -122,8 +122,8 @@ export async function checkForUpdates() {
     .find({ 'package.name': { $exists: true } })
     .toArray()
 
-  // 增量更新时不修改现有插件的 insecure 状态
-  // 全量更新时数据库已被清空，所有包都会重新处理
+  // 在增量更新时，只对有版本变化的包重新检查 insecure 状态
+  // 这些包通过 fetchPackageDetails 函数会正确检查和设置 insecure 状态
 
   // 创建现有版本的映射 (基于重新获取的列表)
   const existingVersions = new Map(
