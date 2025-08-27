@@ -122,34 +122,8 @@ export async function checkForUpdates() {
     .find({ 'package.name': { $exists: true } })
     .toArray()
 
-  // 首先检查并更新现有插件的安全状态
-  const securityUpdateOps = []
-  for (const plugin of currentExistingPlugins) {
-    const isCurrentlyInsecure = plugin.insecure || false
-    const shouldBeInsecure = await isPackageInsecure(plugin.package.name, plugin)
-
-    if (isCurrentlyInsecure !== shouldBeInsecure) {
-      console.log(
-        `更新包 ${plugin.package.name} 的安全状态: ${shouldBeInsecure ? '不安全' : '安全'}`
-      )
-      updatedCount++
-      securityUpdateOps.push({
-        updateOne: {
-          filter: { 'package.name': plugin.package.name },
-          update: {
-            $set: {
-              insecure: shouldBeInsecure,
-              'flags.insecure': shouldBeInsecure ? 1 : 0
-            }
-          }
-        }
-      })
-    }
-  }
-
-  if (securityUpdateOps.length > 0) {
-    await collection.bulkWrite(securityUpdateOps)
-  }
+  // 在增量更新时，只对有版本变化的包重新检查 insecure 状态
+  // 这些包通过 fetchPackageDetails 函数会正确检查和设置 insecure 状态
 
   // 创建现有版本的映射 (基于重新获取的列表)
   const existingVersions = new Map(
