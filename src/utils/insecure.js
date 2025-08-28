@@ -1,11 +1,7 @@
 import fetch from 'node-fetch'
 import { config } from '../config.js'
 
-const UNSAFE_DEPENDENCIES = new Set([
-  'sharp',
-  'puppeteer',
-  'canvas'
-])
+const UNSAFE_DEPENDENCIES = new Set(['sharp', 'puppeteer', 'canvas'])
 
 class InsecurePackagesManager {
   constructor() {

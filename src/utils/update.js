@@ -3,7 +3,7 @@ import { getPluginsCollection } from './db.js'
 import { loadCategories } from './categories.js'
 import { fetchWithRetry, fetchPackageDetails } from './fetcher.js'
 import semver from 'semver'
-import { loadInsecurePackages, isPackageInsecure } from './insecure.js'
+import { loadInsecurePackages } from './insecure.js'
 import {
   readUpdateCounter,
   incrementUpdateCounter,
@@ -14,7 +14,7 @@ export async function checkForUpdates() {
   // 记录开始时间
   const startTime = process.hrtime.bigint() // 使用高精度时间，避免毫秒级误差
   const collection = await getPluginsCollection()
-  let updatedCount = 0
+  const updatedCount = 0
   let removedCount = 0
 
   // 读取当前更新计数
@@ -53,7 +53,7 @@ export async function checkForUpdates() {
   })
 
   // 并行获取搜索数据、现有插件和不安全包列表
-  const [searchData, existingPlugins, insecurePackages] = await Promise.all([
+  const [searchData, existingPlugins, _insecurePackages] = await Promise.all([
     fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
     collection
       .find({ 'package.name': { $exists: true } })
@@ -193,7 +193,8 @@ export async function checkForUpdates() {
       const currentVersion = existingVersions.get(update.package.name)
       const action = currentVersion ? '更新' : '新增'
       console.log(
-        `- ${action}: ${update.package.name}@${update.package.version}${currentVersion ? ` (原版本: ${currentVersion})` : ''
+        `- ${action}: ${update.package.name}@${update.package.version}${
+          currentVersion ? ` (原版本: ${currentVersion})` : ''
         }`
       )
     })

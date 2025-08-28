@@ -213,16 +213,16 @@ export async function fetchPackageDetails(name, result) {
 
     const contributors = Array.isArray(versionInfo.contributors)
       ? versionInfo.contributors.map((contributor) => {
-        if (typeof contributor === 'string') {
-          return { name: contributor }
-        }
-        return {
-          name: contributor.name || '',
-          email: contributor.email || '',
-          url: contributor.url || '',
-          username: contributor.name || ''
-        }
-      })
+          if (typeof contributor === 'string') {
+            return { name: contributor }
+          }
+          return {
+            name: contributor.name || '',
+            email: contributor.email || '',
+            url: contributor.url || '',
+            username: contributor.name || ''
+          }
+        })
       : []
 
     const npmLink = name.startsWith('@')
@@ -282,7 +282,9 @@ export async function fetchPackageDetails(name, result) {
     }
 
     // 检查包是否不安全
-    const isInsecure = await isPackageInsecure(name, versionInfo) || koishiManifest.insecure === true
+    const isInsecure =
+      (await isPackageInsecure(name, versionInfo)) ||
+      koishiManifest.insecure === true
 
     return {
       category: result.category || 'other',
