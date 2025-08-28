@@ -9,7 +9,7 @@ services:
       MONGO_INITDB_DATABASE: koishi_registry
 
   koishi_registry: 
-    build: .
+    image: q78kg/koishi-registry:latest
     ports:
       - "3000:3000"
     environment:
