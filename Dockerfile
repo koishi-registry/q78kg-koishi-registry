@@ -8,7 +8,7 @@ COPY . /app
 WORKDIR /app
 
 RUN corepack enable
-RUN corepack prepare
+RUN corepack install -g yarn
 RUN yarn install --immutable
 RUN yarn build
 
