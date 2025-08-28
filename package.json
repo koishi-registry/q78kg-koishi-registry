@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.js --server",
     "scan": "node src/index.js",
+    "build": "rolldown -c rolldown.config.js",
     "lint": "biome check && biome lint",
     "lint-fix": "biome format --write && biome lint --write"
   },
@@ -20,7 +21,8 @@
     "semver": "^7.7.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.2"
+    "@biomejs/biome": "^2.2.2",
+    "rolldown": "1.0.0-beta.34"
   },
   "packageManager": "yarn@4.9.1+sha512.4d6ab01b3f899acf40a54647f7fbabd7bb6ab70b8b2196e8a0cba3fb5e2fef2c9f659445c8959cc677353eeb643b9e4cca3b9e7448ad960dd84d5e111e07ce8c"
 }

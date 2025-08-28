@@ -3,13 +3,14 @@ FROM node:lts
 # ARG https_proxy http://192.168.1.100:7890
 # ARG http_proxy http://192.168.1.100:7890
 
-COPY . /koishi-registry
+COPY . /app
 
-WORKDIR /koishi-registry
+WORKDIR /app
 
-RUN npm config set registry https://registry.npmmirror.com
-RUN npm install
-
+RUN corepack enable
+RUN corepack prepare
+RUN yarn install --immutable
+RUN yarn build
 
 EXPOSE 3000
-CMD ["node", "./src/index.js" ,"--server"]
+CMD ["node", "./dist/index.js" ,"--server"]
