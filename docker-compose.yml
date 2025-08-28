@@ -2,7 +2,6 @@ version: '3.8'
 services:
   koishi-mongo:
     image: mongo:latest
-    container_name: koishi-mongo
     ports:
       - "27017:27017"
     environment:
@@ -10,8 +9,7 @@ services:
       MONGO_INITDB_DATABASE: koishi_registry
 
   koishi_registry: 
-    image: t4wefan/koishi-registry
-    container_name: koishi-registry
+    build: .
     ports:
       - "3000:3000"
     environment:
