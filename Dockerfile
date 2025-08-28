@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:lts-slim
 
 # ARG https_proxy http://192.168.1.100:7890
 # ARG http_proxy http://192.168.1.100:7890
