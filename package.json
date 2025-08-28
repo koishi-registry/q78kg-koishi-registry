@@ -4,8 +4,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js --server",
-    "scan": "node src/index.js",
+    "start": "node dist/index.js --server",
+    "scan": "node dist/index.js",
     "build": "rolldown -c rolldown.config.js",
     "lint": "biome check && biome lint",
     "lint-fix": "biome format --write && biome lint --write"
@@ -24,5 +24,5 @@
     "@biomejs/biome": "^2.2.2",
     "rolldown": "1.0.0-beta.34"
   },
-  "packageManager": "yarn@4.9.1+sha512.4d6ab01b3f899acf40a54647f7fbabd7bb6ab70b8b2196e8a0cba3fb5e2fef2c9f659445c8959cc677353eeb643b9e4cca3b9e7448ad960dd84d5e111e07ce8c"
+  "packageManager": "yarn@4.9.4+sha512.7b1cb0b62abba6a537b3a2ce00811a843bea02bcf53138581a6ae5b1bf563f734872bd47de49ce32a9ca9dcaff995aa789577ffb16811da7c603dcf69e73750b"
 }

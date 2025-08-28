@@ -8,7 +8,7 @@ services:
       # 可选：初始化数据库和凭据
       MONGO_INITDB_DATABASE: koishi_registry
 
-  koishi_registry: 
+  koishi_registry:
     image: q78kg/koishi-registry:latest
     ports:
       - "3000:3000"

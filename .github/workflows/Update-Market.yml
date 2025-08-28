@@ -2,7 +2,7 @@ name: Update Market
 
 on:
     schedule:
-        - cron: '*/15 * * * *' # 每10分钟运行一次
+        - cron: '*/15 * * * *'
     push:
         branches:
             - main
@@ -22,7 +22,7 @@ jobs:
             - name: Setup Environment
               run: |
                   corepack enable
-                  corepack use yarn
+                  corepack prepare
 
             - name: Setup SSH
               env:
@@ -35,7 +35,8 @@ jobs:
 
             - name: Setup Market
               run: |
-                  yarn
+                  yarn install --immutable
+                  yarn build
 
             - name: Configure Git
               env:
