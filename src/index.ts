@@ -1,5 +1,5 @@
-import { startServer } from './server.js'
-import { scanOnly } from './scanner.js'
+import { startServer } from './server'
+import { scanOnly } from './scanner'
 
 const isServerMode = process.argv.includes('--server')
 

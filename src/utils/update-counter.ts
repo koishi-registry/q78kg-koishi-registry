@@ -1,4 +1,4 @@
-import { getPluginsCollection } from './db.js'
+import { getPluginsCollection } from './db'
 
 // 在数据库中存储计数器的集合名称和文档ID
 const COUNTER_COLLECTION = 'system_settings'
@@ -8,7 +8,7 @@ const COUNTER_DOCUMENT_ID = 'update_counter'
  * 从数据库获取更新计数器
  * @returns {Promise<number>} 当前更新计数
  */
-export async function readUpdateCounter() {
+export async function readUpdateCounter(): Promise<number> {
   try {
     console.log('正在从数据库获取更新计数...')
 
@@ -36,7 +36,7 @@ export async function readUpdateCounter() {
  * @param {number} count 当前计数
  * @returns {Promise<number>} 保存后的计数
  */
-export async function saveUpdateCounter(count) {
+export async function saveUpdateCounter(count: number): Promise<number> {
   try {
     // 获取系统设置集合
     const collection = await getPluginsCollection(COUNTER_COLLECTION)
@@ -67,7 +67,7 @@ export async function saveUpdateCounter(count) {
  * 增加更新计数
  * @returns {Promise<number>} 更新后的计数
  */
-export async function incrementUpdateCounter() {
+export async function incrementUpdateCounter(): Promise<number> {
   try {
     // 获取系统设置集合
     const collection = await getPluginsCollection(COUNTER_COLLECTION)
@@ -103,6 +103,6 @@ export async function incrementUpdateCounter() {
  * 重置更新计数器
  * @returns {Promise<number>} 重置后的计数 (0)
  */
-export async function resetUpdateCounter() {
+export async function resetUpdateCounter(): Promise<number> {
   return await saveUpdateCounter(0)
 }

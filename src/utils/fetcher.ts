@@ -1,17 +1,58 @@
-import fetch from 'node-fetch'
-import { config } from '../config.js'
-import { calculatePackageScore } from './scoring.js'
-import { getCategory, loadCategories } from './categories.js'
+import fetch, {
+  type RequestInfo,
+  type RequestInit,
+  type Response
+} from 'node-fetch'
+import { config } from '../config'
+import { calculatePackageScore } from './scoring'
+import { getCategory, loadCategories } from './categories'
 import semver from 'semver'
-import { loadInsecurePackages, isPackageInsecure } from './insecure.js'
-import { validatePackage } from './validator.js'
+import { loadInsecurePackages, isPackageInsecure } from './insecure'
+import { validatePackage } from './validator'
 import pLimit from 'p-limit'
 
 // 针对 npmjs.org 官方源的并发限制器
 const npmjsLimiter = pLimit(config.NPMJS_CONCURRENT_REQUESTS)
 
+// 最小化的 NPM registry 响应类型定义（仅包含本文件中用到的字段）
+export interface NpmPackageVersionInfo {
+  deprecated?: boolean
+  repository?: string | { url?: string }
+  _npmUser?: { name?: string; email?: string }
+  contributors?: Array<{ name?: string; email?: string; url?: string } | string>
+  license?: string
+  dist?: { unpackedSize?: number; size?: number }
+  peerDependencies?: Record<string, string>
+  koishi?: any
+  description?: string
+  bugs?: { url?: string }
+  homepage?: string
+  keywords?: string[]
+}
+
+export interface NpmPackageData {
+  'dist-tags'?: { latest?: string }
+  versions?: Record<string, NpmPackageVersionInfo>
+  deprecated?: boolean
+  license?: string
+  time?: Record<string, string>
+  maintainers?: Array<{ name?: string; email?: string }>
+  repository?: string | { url?: string }
+  koishi?: any
+}
+
+export interface NpmSearchResult {
+  package: { name: string; version?: string }
+  downloads?: { all?: number }
+}
+
+export interface NpmSearchResponse {
+  total?: number
+  objects?: NpmSearchResult[]
+}
+
 // 获取包的短名称
-function getPackageShortname(name) {
+function getPackageShortname(name: string) {
   if (name.startsWith('@koishijs/')) {
     return name.replace('@koishijs/plugin-', '')
   } else if (name.startsWith('@')) {
@@ -23,26 +64,47 @@ function getPackageShortname(name) {
 }
 
 // 验证包是否为官方包
-function isVerifiedPackage(name) {
+function isVerifiedPackage(name: string) {
   return name.startsWith('@koishijs/')
 }
 
 // 导出 fetchWithRetry
+// Overloads：当 returnJson 为 false 时返回 Response，否则返回 JSON（unknown，由调用方断言）
 export async function fetchWithRetry(
-  url,
-  options,
-  retries = config.MAX_RETRIES,
-  returnJson = true,
-  isNpmjsOfficialSource = false // 是否为 npmjs 官方源请求
-) {
+  url: URL | RequestInfo,
+  options?: RequestInit,
+  retries?: number,
+  returnJson?: true,
+  isNpmjsOfficialSource?: boolean
+): Promise<unknown>
+export async function fetchWithRetry(
+  url: URL | RequestInfo,
+  options: RequestInit,
+  retries: number,
+  returnJson: false,
+  isNpmjsOfficialSource?: boolean
+): Promise<Response>
+export async function fetchWithRetry(
+  url: URL | RequestInfo,
+  options: RequestInit = {},
+  retries: number = config.MAX_RETRIES,
+  returnJson: boolean = true,
+  isNpmjsOfficialSource: boolean = false // 是否为 npmjs 官方源请求
+): Promise<unknown | Response> {
   for (let i = 0; i < retries; i++) {
     try {
-      let response
+      let response: Response
       const fetchOperation = async () => {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          config.REQUEST_TIMEOUT
+        )
         const res = await fetch(url, {
           ...options,
-          timeout: config.REQUEST_TIMEOUT
+          signal: controller.signal
         })
+        clearTimeout(timeoutId)
         // 如果是 429 错误，抛出特殊错误以便重试逻辑处理
         if (res.status === 429) {
           const retryAfter = res.headers.get('Retry-After')
@@ -110,7 +172,10 @@ export async function fetchWithRetry(
 }
 
 // 导出 fetchPackageDetails
-export async function fetchPackageDetails(name, result) {
+export async function fetchPackageDetails(
+  name: string,
+  result: { downloads?: { all?: any }; category?: any; portable?: any }
+) {
   try {
     const npmjsOfficialUrl = `https://registry.npmjs.org/${name}` // npmjs 官方源地址
     const officialResponse = await fetchWithRetry(
@@ -132,7 +197,7 @@ export async function fetchPackageDetails(name, result) {
     }
 
     const pkgUrl = `${config.NPM_REGISTRY}/${name}`
-    const pkgData = await fetchWithRetry(pkgUrl)
+    const pkgData = (await fetchWithRetry(pkgUrl)) as NpmPackageData
 
     const latestVersion = pkgData['dist-tags']?.latest
     const versionInfo = latestVersion ? pkgData.versions?.[latestVersion] : {}
@@ -205,24 +270,28 @@ export async function fetchPackageDetails(name, result) {
       username: versionInfo._npmUser?.name || ''
     }
 
-    const maintainers = (pkgData.maintainers || []).map((maintainer) => ({
-      name: maintainer.name || '',
-      email: maintainer.email || '',
-      username: maintainer.name || ''
-    }))
+    const maintainers = (pkgData.maintainers || []).map(
+      (maintainer: { name: any; email: any }) => ({
+        name: maintainer.name || '',
+        email: maintainer.email || '',
+        username: maintainer.name || ''
+      })
+    )
 
     const contributors = Array.isArray(versionInfo.contributors)
-      ? versionInfo.contributors.map((contributor) => {
-          if (typeof contributor === 'string') {
-            return { name: contributor }
+      ? versionInfo.contributors.map(
+          (contributor: { name: any; email: any; url: any }) => {
+            if (typeof contributor === 'string') {
+              return { name: contributor }
+            }
+            return {
+              name: contributor.name || '',
+              email: contributor.email || '',
+              url: contributor.url || '',
+              username: contributor.name || ''
+            }
           }
-          return {
-            name: contributor.name || '',
-            email: contributor.email || '',
-            url: contributor.url || '',
-            username: contributor.name || ''
-          }
-        })
+        )
       : []
 
     const npmLink = name.startsWith('@')
@@ -351,11 +420,13 @@ export async function fetchKoishiPlugins() {
   while (true) {
     const params = new URLSearchParams({
       text: config.SEARCH_QUERY,
-      size: config.SEARCH_SIZE,
-      from: fromOffset
+      size: String(config.SEARCH_SIZE),
+      from: String(fromOffset)
     })
 
-    const data = await fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`)
+    const data = (await fetchWithRetry(
+      `${config.NPM_SEARCH_URL}?${params}`
+    )) as NpmSearchResponse
 
     if (!totalPackages) {
       totalPackages = data.total
@@ -366,10 +437,10 @@ export async function fetchKoishiPlugins() {
 
     // 预处理所有有效的包，包括它们的分类信息
     const validPackages = results
-      .filter((result) =>
+      .filter((result: { package: { name: string } }) =>
         config.VALID_PACKAGE_PATTERN.test(result.package?.name)
       )
-      .map((result) => ({
+      .map((result: { package: { name: string }; downloads: any }) => ({
         name: result.package.name,
         result: {
           ...result,

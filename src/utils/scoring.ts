@@ -71,7 +71,8 @@ function calculateMaintenanceScore({
   maintainersCount
 }) {
   const now = new Date()
-  const monthsSinceUpdate = (now - lastUpdated) / (1000 * 60 * 60 * 24 * 30)
+  const monthsSinceUpdate =
+    (now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24 * 30)
 
   let score = 0
   score += Math.max(0, 1 - monthsSinceUpdate / 12)
@@ -101,7 +102,9 @@ function calculateCommitFrequency(timeInfo) {
 
   const firstVersion = new Date(timeInfo[versions[0]])
   const lastVersion = new Date(timeInfo[versions[versions.length - 1]])
-  const months = (lastVersion - firstVersion) / (1000 * 60 * 60 * 24 * 30)
+  const months =
+    (lastVersion.getTime() - firstVersion.getTime()) /
+    (1000 * 60 * 60 * 24 * 30)
 
   return months === 0 ? 0 : Math.min(versions.length / months, 1)
 }

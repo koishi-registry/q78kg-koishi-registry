@@ -6,7 +6,7 @@ const external = new RegExp(
 )
 
 export default defineConfig({
-  input: './src/index.js',
+  input: './src/index.ts',
   output: [{ dir: 'dist', format: 'es', minify: true }],
   external: external
 })

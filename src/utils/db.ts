@@ -1,8 +1,8 @@
-import { MongoClient } from 'mongodb'
-import { config } from '../config.js'
+import { MongoClient, type Db, type Collection } from 'mongodb'
+import { config } from '../config'
 
-let client
-let db
+let client: MongoClient | null
+let db: Db | null
 
 export async function connectDB() {
   try {
@@ -22,10 +22,10 @@ export async function connectDB() {
 }
 
 export async function getPluginsCollection(collectionName = 'plugins') {
-  if (!db || !client?.topology?.isConnected?.()) {
+  if (!db) {
     await connectDB()
   }
-  return db.collection(collectionName)
+  return (db as Db).collection(collectionName) as Collection<any>
 }
 
 export async function closeDB() {

@@ -3,7 +3,7 @@
  * @param {Object} data - The data object to compress
  * @returns {Promise<string>} - The compressed JSON string
  */
-export async function compressJson(data) {
+export async function compressJson(data: object): Promise<string> {
   try {
     // Convert data to JSON with no whitespace (no indentation, no spaces)
     // This is the most efficient way to compress JSON

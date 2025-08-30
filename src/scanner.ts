@@ -1,7 +1,7 @@
-import { getPluginsCollection, closeDB } from './utils/db.js'
+import { getPluginsCollection, closeDB } from './utils/db'
 import fs from 'node:fs/promises'
-import { checkForUpdates } from './utils/update.js'
-import { compressJson } from './utils/compressor.js'
+import { checkForUpdates } from './utils/update'
+import { compressJson } from './utils/compressor'
 
 export async function saveToFile(data, filename = 'public/index.json') {
   const output = {

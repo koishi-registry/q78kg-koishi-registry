@@ -1,14 +1,19 @@
-import { config } from '../config.js'
-import { getPluginsCollection } from './db.js'
-import { loadCategories } from './categories.js'
-import { fetchWithRetry, fetchPackageDetails } from './fetcher.js'
+import { config } from '../config'
+import { getPluginsCollection } from './db'
+import { loadCategories } from './categories'
+import {
+  fetchWithRetry,
+  fetchPackageDetails,
+  type NpmSearchResponse,
+  type NpmSearchResult
+} from './fetcher'
 import semver from 'semver'
-import { loadInsecurePackages } from './insecure.js'
+import { loadInsecurePackages } from './insecure'
 import {
   readUpdateCounter,
   incrementUpdateCounter,
   resetUpdateCounter
-} from './update-counter.js'
+} from './update-counter'
 
 export async function checkForUpdates() {
   // 记录开始时间
@@ -48,13 +53,15 @@ export async function checkForUpdates() {
 
   const params = new URLSearchParams({
     text: config.SEARCH_QUERY,
-    size: config.SEARCH_SIZE,
-    from: 0
+    size: String(config.SEARCH_SIZE),
+    from: String(0)
   })
 
   // 并行获取搜索数据、现有插件和不安全包列表
   const [searchData, existingPlugins, _insecurePackages] = await Promise.all([
-    fetchWithRetry(`${config.NPM_SEARCH_URL}?${params}`),
+    fetchWithRetry(
+      `${config.NPM_SEARCH_URL}?${params}`
+    ) as Promise<NpmSearchResponse>,
     collection
       .find({ 'package.name': { $exists: true } })
       .toArray(), // 只获取有 package.name 的文档
@@ -137,11 +144,14 @@ export async function checkForUpdates() {
   const categories = await loadCategories()
 
   // 通过搜索结果筛选需要更新的包
-  for (const result of searchData.objects || []) {
+  const searchResults: NpmSearchResult[] = searchData.objects || []
+  for (const result of searchResults) {
     const packageName = result.package?.name
-    if (!config.VALID_PACKAGE_PATTERN.test(packageName)) continue
+    if (!packageName || !config.VALID_PACKAGE_PATTERN.test(packageName))
+      continue
 
     const latestVersion = result.package.version
+    if (!latestVersion) continue
     const currentVersion = existingVersions.get(packageName)
 
     // 如果是全量更新模式，或者包是新增的，或者版本有更新，则加入待更新列表

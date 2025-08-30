@@ -1,11 +1,13 @@
 import express from 'express'
 import cron from 'node-cron'
-import { config } from './config.js'
-import { checkForUpdates } from './utils/update.js'
-import { loadFromDatabase } from './scanner.js'
-import { compressJson } from './utils/compressor.js'
+import { config } from './config'
+import { checkForUpdates } from './utils/update'
+import { loadFromDatabase } from './scanner'
+import { compressJson } from './utils/compressor'
 
 export class Server {
+  app: any
+  data: { time: string; total: number; version: number; objects: any[] }
   constructor() {
     this.app = express()
     this.data = {
