@@ -82,6 +82,6 @@ jobs:
                   CNB_REPO: ${{ secrets.CNB_REPO }}
               run: |
                   git config --global credential.helper store
-                  echo "https://${CNB_USER}:${CNB_TOKEN}@github.com" > ~/.git-credentials
-                  git remote add cnb https://github.com/${CNB_REPO}.git || git remote set-url cnb https://github.com/${CNB_REPO}.git
+                  echo "https://${CNB_USER}:${CNB_TOKEN}@cnb.cool" > ~/.git-credentials
+                  git remote add cnb https://cnb.cool/${CNB_REPO} || git remote set-url cnb https://cnb.cool/${CNB_REPO}
                   git push -f cnb main
