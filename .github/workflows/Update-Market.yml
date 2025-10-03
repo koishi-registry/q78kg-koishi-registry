@@ -74,3 +74,14 @@ jobs:
                   git add -f index.json CNAME .nojekyll
                   git commit -m "Update market" || true
                   git push -f origin pages
+
+            - name: Push to CNB Repository
+              env:
+                  CNB_USER: ${{ secrets.CNB_USER }}
+                  CNB_TOKEN: ${{ secrets.CNB_TOKEN }}
+                  CNB_REPO: ${{ secrets.CNB_REPO }}
+              run: |
+                  git config --global credential.helper store
+                  echo "https://${CNB_USER}:${CNB_TOKEN}@github.com" > ~/.git-credentials
+                  git remote add cnb https://github.com/${CNB_REPO}.git || git remote set-url cnb https://github.com/${CNB_REPO}.git
+                  git push -f cnb main
