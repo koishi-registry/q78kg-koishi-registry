@@ -84,4 +84,6 @@ jobs:
                   git config --global credential.helper store
                   echo "https://${CNB_USER}:${CNB_TOKEN}@cnb.cool" > ~/.git-credentials
                   git remote add cnb https://cnb.cool/${CNB_REPO} || git remote set-url cnb https://cnb.cool/${CNB_REPO}
-                  git push -f cnb main
+                  git fetch --unshallow origin || true
+                  git checkout -b temp-branch
+                  git push -f cnb +temp-branch:main
