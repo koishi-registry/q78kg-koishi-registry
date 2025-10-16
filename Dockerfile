@@ -7,6 +7,7 @@ COPY . /app
 
 WORKDIR /app
 
+RUN npm install -g corepack
 RUN corepack enable
 RUN corepack install -g yarn
 RUN yarn install --immutable
