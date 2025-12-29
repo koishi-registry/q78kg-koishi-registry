@@ -9,7 +9,7 @@ WORKDIR /app
 
 RUN npm install -g corepack
 RUN corepack enable
-RUN corepack install -g yarn
+RUN corepack prepare
 RUN yarn install --immutable
 RUN yarn build
 
