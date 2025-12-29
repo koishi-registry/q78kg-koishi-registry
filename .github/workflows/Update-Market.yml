@@ -19,7 +19,7 @@ jobs:
               with:
                   node-version: 'lts/*'
 
-            - name: Setup Environment
+            - name: Setup Corepack
               run: |
                   npm install -g corepack
                   corepack enable
@@ -33,10 +33,13 @@ jobs:
                   chmod 600 ~/.ssh/id_rsa
                   ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-            - name: Setup Market
+            - name: Setup Dependencies
               run: |
                   corepack prepare
                   yarn install --immutable
+
+            - name: Build and Deploy
+              run: |
                   yarn build
 
             - name: Configure Git
