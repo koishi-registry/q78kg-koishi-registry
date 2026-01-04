@@ -200,7 +200,13 @@ export async function fetchPackageDetails(
     const pkgData = (await fetchWithRetry(pkgUrl)) as NpmPackageData
 
     const latestVersion = pkgData['dist-tags']?.latest
-    const versionInfo = latestVersion ? pkgData.versions?.[latestVersion] : {}
+    const versionInfo = latestVersion ? pkgData.versions?.[latestVersion] : undefined
+
+    // 如果没有找到版本信息，跳过该包
+    if (!versionInfo) {
+      console.log(`Package ${name} has no version info, skipping.`)
+      return null
+    }
 
     // 检查包是否被弃用
     if (versionInfo.deprecated || pkgData.deprecated) {
@@ -280,18 +286,18 @@ export async function fetchPackageDetails(
 
     const contributors = Array.isArray(versionInfo.contributors)
       ? versionInfo.contributors.map(
-          (contributor: { name: any; email: any; url: any }) => {
-            if (typeof contributor === 'string') {
-              return { name: contributor }
-            }
-            return {
-              name: contributor.name || '',
-              email: contributor.email || '',
-              url: contributor.url || '',
-              username: contributor.name || ''
-            }
+        (contributor: { name: any; email: any; url: any }) => {
+          if (typeof contributor === 'string') {
+            return { name: contributor }
           }
-        )
+          return {
+            name: contributor.name || '',
+            email: contributor.email || '',
+            url: contributor.url || '',
+            username: contributor.name || ''
+          }
+        }
+      )
       : []
 
     const npmLink = name.startsWith('@')
